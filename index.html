@@ -23,15 +23,33 @@
             background-color: #1f2937;
             ring: 2px solid #58a6ff;
         }
-        .hour-slot:hover {
-            background-color: #1f2937;
+        .timeline-container {
+            position: relative;
+            height: 1440px; /* 60px per hour × 24 */
         }
-        .event-bar, .slot-bar {
-            animation: fadeIn 0.3s ease forwards;
+        .slot-bar {
+            position: absolute;
+            left: 80px;
+            right: 20px;
+            background: #21262d;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        .slot-bar:hover {
+            background: #30363d;
+            transform: translateY(-1px);
+        }
+        .time-label {
+            position: absolute;
+            left: 0;
+            width: 70px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 13px;
+            color: #8b949e;
         }
     </style>
 </head>
@@ -42,6 +60,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 bg-gradient-to-br from-[#58a6ff] to-[#1f6feb] rounded-2xl flex items-center justify-center text-3xl">⏱️</div>
                 <h1 class="text-3xl font-semibold tracking-tighter logo-font text-white">Samayam</h1>
+                <span class="px-3 py-1 text-xs font-medium bg-[#21262d] text-[#58a6ff] rounded-full border border-[#58a6ff]/30">Beta 1.0</span>
             </div>
 
             <div class="flex bg-[#161b22] rounded-3xl p-1 text-sm font-medium border border-[#21262d] overflow-x-auto whitespace-nowrap">
@@ -66,10 +85,22 @@
     </header>
 
     <div class="max-w-screen-2xl mx-auto px-4 md:px-8 py-6">
-        <!-- Calendar View with Sidebar -->
+        <!-- Calendar View - Sidebar moved to LEFT -->
         <div id="view-0" class="view grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Sidebar: Day's Events (LEFT) -->
+            <div class="lg:col-span-3">
+                <div class="bg-[#161b22] rounded-3xl p-6 h-full sticky top-6">
+                    <h3 id="sidebar-date" class="text-xl font-semibold mb-4">Events for this day</h3>
+                    <div id="sidebar-events" class="space-y-4 min-h-[400px]"></div>
+                    <button onclick="showAddEventModal()" 
+                            class="mt-6 w-full py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl flex items-center justify-center gap-2">
+                        <span class="text-xl">+</span> Add Event
+                    </button>
+                </div>
+            </div>
+
             <!-- Main Calendar -->
-            <div class="lg:col-span-8">
+            <div class="lg:col-span-9">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-4">
                         <button onclick="prevMonth()" class="w-10 h-10 flex items-center justify-center text-3xl hover:bg-[#21262d] rounded-2xl">‹</button>
@@ -91,22 +122,9 @@
                     <div id="calendar-grid" class="grid grid-cols-7 col-span-7 gap-px"></div>
                 </div>
             </div>
-
-            <!-- Sidebar: Day's Events -->
-            <div class="lg:col-span-4">
-                <div class="bg-[#161b22] rounded-3xl p-6 h-full">
-                    <h3 id="sidebar-date" class="text-xl font-semibold mb-4">Events for this day</h3>
-                    <div id="sidebar-events" class="space-y-4 min-h-[400px]"></div>
-                    
-                    <button onclick="showAddEventModal()" 
-                            class="mt-6 w-full py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl flex items-center justify-center gap-2">
-                        <span class="text-xl">+</span> Add Event
-                    </button>
-                </div>
-            </div>
         </div>
 
-        <!-- Day Plan View (Shows Slots) -->
+        <!-- Day Plan View (Improved Timeline + Schedule Button) -->
         <div id="view-1" class="view hidden">
             <div class="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
                 <div>
@@ -117,6 +135,13 @@
                     <button onclick="prevDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">← Prev</button>
                     <button onclick="nextDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">Next →</button>
                     <button onclick="goToTodayInDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">Today</button>
+                    
+                    <!-- New Schedule Button -->
+                    <button onclick="openScheduleTemplateModal()" 
+                            class="px-6 py-3 bg-[#21262d] hover:bg-[#30363d] text-white rounded-2xl flex items-center gap-2">
+                        📋 Schedule
+                    </button>
+
                     <button onclick="showAddEventModal()" 
                             class="px-6 py-3 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl flex items-center gap-2">
                         <span class="text-xl">+</span> Add Slot
@@ -124,7 +149,10 @@
                 </div>
             </div>
 
-            <div id="hourly-schedule" class="bg-[#161b22] rounded-3xl border border-[#21262d] max-h-[75vh] overflow-auto"></div>
+            <!-- Improved Timeline UI -->
+            <div class="bg-[#161b22] rounded-3xl border border-[#21262d] overflow-hidden">
+                <div id="day-plan-timeline" class="relative timeline-container"></div>
+            </div>
         </div>
 
         <!-- Week View -->
@@ -171,18 +199,16 @@
         </div>
     </div>
 
-    <!-- Add/Edit Modal -->
+    <!-- Add/Edit Event Modal -->
     <div id="event-modal" onclick="if(event.target.id==='event-modal') hideModal()" 
          class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
         <div onclick="event.stopImmediatePropagation()" 
              class="bg-[#161b22] w-full max-w-lg mx-4 rounded-3xl overflow-hidden">
             <div class="p-8">
                 <h3 id="modal-title" class="text-2xl font-semibold mb-6">New Event</h3>
-                
                 <div class="space-y-6">
                     <input id="event-title" type="text" placeholder="Event title" 
                            class="w-full bg-[#21262d] rounded-2xl px-6 py-4 text-lg outline-none focus:border-[#58a6ff]">
-
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs text-[#8b949e] mb-2">Date</label>
@@ -200,7 +226,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs text-[#8b949e] mb-2">Start Time</label>
@@ -211,15 +236,35 @@
                             <input id="event-end" type="time" value="10:00" class="w-full bg-[#21262d] rounded-2xl px-6 py-4 outline-none">
                         </div>
                     </div>
-
                     <textarea id="event-desc" rows="3" placeholder="Description / Notes (optional)"
                               class="w-full bg-[#21262d] rounded-3xl px-6 py-4 outline-none resize-none"></textarea>
                 </div>
             </div>
-            
             <div class="px-8 py-6 border-t border-[#21262d] flex gap-4">
                 <button onclick="hideModal()" class="flex-1 py-4 text-[#8b949e] font-medium">Cancel</button>
                 <button onclick="saveEvent()" class="flex-1 py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl font-medium">Save Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Template Modal -->
+    <div id="schedule-template-modal" onclick="if(event.target.id==='schedule-template-modal') hideScheduleModal()" 
+         class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110]">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="bg-[#161b22] w-full max-w-2xl mx-4 rounded-3xl overflow-hidden">
+            <div class="p-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center justify-between">
+                    Create Daily Schedule Template
+                    <span onclick="hideScheduleModal()" class="text-[#8b949e] cursor-pointer text-xl">✕</span>
+                </h3>
+                <div id="template-slots-list" class="space-y-4 max-h-[420px] overflow-auto"></div>
+                
+                <div class="mt-6 flex gap-4">
+                    <button onclick="addTemplateSlot()" 
+                            class="flex-1 py-4 border border-[#30363d] rounded-2xl text-[#8b949e] hover:text-white">+ Add Slot to Template</button>
+                    <button onclick="applyTemplateToCurrentDay()" 
+                            class="flex-1 py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl">Apply Template to Today</button>
+                </div>
             </div>
         </div>
     </div>
@@ -237,6 +282,7 @@
         let currentWeekStart = new Date()
         let selectedDateForSidebar = new Date().toISOString().slice(0, 10)
         let editingEventId = null
+        let templateSlots = [] // for schedule template
 
         function loadEvents() {
             const saved = localStorage.getItem('samayamEvents')
@@ -254,7 +300,7 @@
             setTimeout(() => toast.classList.add('hidden'), time)
         }
 
-        // Calendar + Sidebar
+        // Calendar + Left Sidebar
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid')
             grid.innerHTML = ''
@@ -336,58 +382,68 @@
             })
         }
 
-        // Day Plan - Shows Slots
+        // Improved Day Plan Timeline (slots positioned by actual time + duration)
         function renderDayPlan() {
             const date = new Date(currentDayPlanDate)
             document.getElementById('day-plan-date').textContent = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
             document.getElementById('day-plan-dayname').textContent = date.toLocaleDateString('en-IN', { weekday: 'long' })
 
-            const container = document.getElementById('hourly-schedule')
+            const container = document.getElementById('day-plan-timeline')
             container.innerHTML = ''
+
+            // Time labels (every hour)
+            for (let h = 0; h < 24; h++) {
+                const label = document.createElement('div')
+                label.className = 'time-label'
+                label.style.top = `${h * 60}px`
+                label.textContent = `${h.toString().padStart(2, '0')}:00`
+                container.appendChild(label)
+            }
 
             const dayEvents = events.filter(e => e.date === currentDayPlanDate)
                 .sort((a, b) => a.startTime.localeCompare(b.startTime))
 
-            for (let h = 0; h < 24; h++) {
-                const timeStr = `${h.toString().padStart(2, '0')}:00`
-                const slotEvents = dayEvents.filter(ev => parseInt(ev.startTime.split(':')[0]) === h)
+            dayEvents.forEach(ev => {
+                // Convert time to minutes from midnight
+                const [startH, startM] = ev.startTime.split(':').map(Number)
+                const startMinutes = startH * 60 + startM
 
-                const slot = document.createElement('div')
-                slot.className = `hour-slot flex gap-6 border-b border-[#21262d] py-5 px-6 last:border-none cursor-pointer`
+                const [endH, endM] = ev.endTime.split(':').map(Number)
+                const endMinutes = endH * 60 + endM
 
-                slot.innerHTML = `
-                    <div class="w-20 font-mono text-sm text-[#8b949e] pt-1">${timeStr}</div>
-                    <div class="flex-1">
-                        ${slotEvents.length ? slotEvents.map(ev => `
-                            <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" 
-                                 class="slot-bar bg-[#21262d] hover:bg-[#30363d] rounded-2xl p-5 mb-4 cursor-pointer">
-                                <div class="flex justify-between">
-                                    <div class="font-medium">${ev.title}</div>
-                                    <div class="font-mono text-xs text-emerald-400">${ev.startTime}–${ev.endTime}</div>
-                                </div>
-                                ${ev.description ? `<div class="text-sm text-[#8b949e] mt-2">${ev.description}</div>` : ''}
-                                ${ev.alarm ? `<div class="mt-3 text-xs bg-emerald-900 text-emerald-400 px-4 py-1 rounded-3xl inline-flex">🛎️ ${ev.alarm} min</div>` : ''}
-                            </div>
-                        `).join('') : `
-                            <div onclick="quickAddEvent('${timeStr}')" 
-                                 class="border border-dashed border-[#30363d] hover:border-[#58a6ff] rounded-3xl py-10 text-center text-[#8b949e] hover:text-white text-sm">
-                                Tap to add slot at ${timeStr}
-                            </div>
-                        `}
+                const durationMinutes = Math.max(endMinutes - startMinutes, 15) // minimum 15 min
+
+                // 60px per hour = 1px per minute
+                const topPx = startMinutes
+                const heightPx = durationMinutes
+
+                const slotEl = document.createElement('div')
+                slotEl.className = 'slot-bar'
+                slotEl.style.top = `${topPx}px`
+                slotEl.style.height = `${heightPx}px`
+                slotEl.innerHTML = `
+                    <div class="flex justify-between items-start text-sm">
+                        <div>
+                            <div class="font-medium">${ev.title}</div>
+                            <div class="font-mono text-emerald-400">${ev.startTime} – ${ev.endTime}</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            ${ev.alarm ? `<span class="text-xs bg-emerald-900 text-emerald-400 px-3 py-1 rounded-3xl">🛎️ ${ev.alarm} min</span>` : ''}
+                            <button onclick="deleteEvent(${ev.id}); event.stopImmediatePropagation()" class="text-red-400 text-xl leading-none">🗑️</button>
+                        </div>
                     </div>
+                    ${ev.description ? `<div class="text-xs text-[#8b949e] mt-2 line-clamp-2">${ev.description}</div>` : ''}
                 `
-                container.appendChild(slot)
-            }
-        }
+                container.appendChild(slotEl)
+            })
 
-        function quickAddEvent(startTime) {
-            editingEventId = null
-            document.getElementById('event-date').value = currentDayPlanDate
-            document.getElementById('event-start').value = startTime
-            document.getElementById('event-end').value = `${(parseInt(startTime.split(':')[0]) + 1).toString().padStart(2, '0')}:00`
-            document.getElementById('modal-title').textContent = 'New Event'
-            document.getElementById('event-modal').classList.remove('hidden')
-            document.getElementById('event-modal').classList.add('flex')
+            // Empty state
+            if (dayEvents.length === 0) {
+                const empty = document.createElement('div')
+                empty.className = 'absolute inset-0 flex items-center justify-center text-[#8b949e] text-sm italic'
+                empty.textContent = 'No slots yet • Click "+ Add Slot" or use Schedule template'
+                container.appendChild(empty)
+            }
         }
 
         function prevDayPlan() {
@@ -409,7 +465,78 @@
             renderDayPlan()
         }
 
-        // Week View
+        // Schedule Template Modal
+        function openScheduleTemplateModal() {
+            templateSlots = [
+                {title: "Wake up & Morning Routine", start: "06:30", end: "07:30"},
+                {title: "Breakfast", start: "07:30", end: "08:00"},
+                {title: "Work / Study Block 1", start: "09:00", end: "12:00"},
+                {title: "Lunch", start: "13:00", end: "14:00"},
+                {title: "Work / Study Block 2", start: "14:00", end: "17:00"},
+                {title: "Evening Exercise", start: "18:00", end: "19:00"},
+                {title: "Dinner & Wind down", start: "20:00", end: "22:00"}
+            ]
+            renderTemplateList()
+            document.getElementById('schedule-template-modal').classList.remove('hidden')
+            document.getElementById('schedule-template-modal').classList.add('flex')
+        }
+
+        function hideScheduleModal() {
+            const modal = document.getElementById('schedule-template-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+
+        function renderTemplateList() {
+            const container = document.getElementById('template-slots-list')
+            container.innerHTML = ''
+            templateSlots.forEach((slot, i) => {
+                const row = document.createElement('div')
+                row.className = 'flex items-center gap-4 bg-[#21262d] rounded-2xl p-4'
+                row.innerHTML = `
+                    <input type="text" value="${slot.title}" 
+                           oninput="templateSlots[${i}].title = this.value" 
+                           class="flex-1 bg-transparent outline-none text-sm">
+                    <input type="time" value="${slot.start}" 
+                           oninput="templateSlots[${i}].start = this.value" class="w-28 bg-[#0d1117] rounded-xl px-3 py-2 text-sm">
+                    <input type="time" value="${slot.end}" 
+                           oninput="templateSlots[${i}].end = this.value" class="w-28 bg-[#0d1117] rounded-xl px-3 py-2 text-sm">
+                    <button onclick="removeTemplateSlot(${i})" class="text-red-400 text-xl">🗑️</button>
+                `
+                container.appendChild(row)
+            })
+        }
+
+        function addTemplateSlot() {
+            templateSlots.push({title: "New Slot", start: "09:00", end: "10:00"})
+            renderTemplateList()
+        }
+
+        function removeTemplateSlot(i) {
+            templateSlots.splice(i, 1)
+            renderTemplateList()
+        }
+
+        function applyTemplateToCurrentDay() {
+            const date = currentDayPlanDate
+            templateSlots.forEach(t => {
+                events.push({
+                    id: Date.now() + Math.random() * 1000000,
+                    title: t.title,
+                    date: date,
+                    startTime: t.start,
+                    endTime: t.end,
+                    description: "From schedule template",
+                    alarm: 10
+                })
+            })
+            saveEvents()
+            hideScheduleModal()
+            renderDayPlan()
+            showToast('✅ Schedule template applied to today!', 3000)
+        }
+
+        // Week View (slots shown here too)
         function renderWeekView() {
             const start = new Date(currentWeekStart)
             start.setDate(start.getDate() - start.getDay() + 1)
@@ -444,14 +571,17 @@
                 content.className = 'p-4 space-y-3 min-h-[300px]'
 
                 if (dayEvents.length === 0) {
-                    content.innerHTML = `<div class="text-center py-12 text-[#8b949e] text-sm italic">No events</div>`
+                    content.innerHTML = `<div class="text-center py-12 text-[#8b949e] text-sm italic">No slots</div>`
                 } else {
                     dayEvents.forEach(ev => {
                         content.innerHTML += `
                             <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" 
-                                 class="slot-bar bg-[#21262d] hover:bg-[#30363d] rounded-2xl p-4 cursor-pointer">
-                                <div class="font-medium">${ev.title}</div>
-                                <div class="text-xs text-emerald-400 font-mono mt-1">${ev.startTime} – ${ev.endTime}</div>
+                                 class="slot-bar bg-[#21262d] hover:bg-[#30363d] rounded-2xl p-4 cursor-pointer flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">${ev.title}</div>
+                                    <div class="text-xs text-emerald-400 font-mono">${ev.startTime} – ${ev.endTime}</div>
+                                </div>
+                                <button onclick="deleteEvent(${ev.id}); event.stopImmediatePropagation()" class="text-red-400 text-xl">🗑️</button>
                             </div>
                         `
                     })
@@ -475,7 +605,7 @@
         function showAddEventModal() {
             editingEventId = null
             document.getElementById('modal-title').textContent = 'New Event'
-            document.getElementById('event-date').value = selectedDateForSidebar || new Date().toISOString().slice(0,10)
+            document.getElementById('event-date').value = selectedDateForSidebar || currentDayPlanDate || new Date().toISOString().slice(0,10)
             document.getElementById('event-title').value = ''
             document.getElementById('event-desc').value = ''
             document.getElementById('event-start').value = '09:00'
@@ -534,11 +664,11 @@
         }
 
         function deleteEvent(id) {
-            if (confirm('Delete this event?')) {
+            if (confirm('Delete this event/slot permanently?')) {
                 events = events.filter(e => e.id !== id)
                 saveEvents()
                 renderAllViews()
-                showToast('Event deleted')
+                showToast('✅ Deleted')
             }
         }
 
@@ -655,7 +785,7 @@
             loadEvents()
             renderAllViews()
             switchTab(0)
-            showToast('Welcome to <strong>Samayam</strong> ⏱️', 2000)
+            showToast('Samayam Beta 1.0 ready! 🎉', 2200)
         }
     </script>
 </body>
