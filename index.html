@@ -44,7 +44,7 @@
             color: #8b949e;
         }
 
-        /* Week View - Screenshot style */
+        /* Week View */
         .week-day-card {
             background: #161b22;
             border-radius: 16px;
@@ -59,9 +59,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .week-event-bar:hover {
-            background: #30363d;
-        }
+        .week-event-bar:hover { background: #30363d; }
     </style>
 </head>
 <body class="bg-[#0d1117] text-[#c9d1d9] min-h-screen">
@@ -88,31 +86,41 @@
     </header>
 
     <div class="max-w-screen-2xl mx-auto px-4 py-6">
-        <!-- Calendar View -->
-        <div id="view-0" class="view">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center gap-3">
-                    <button onclick="prevMonth()" class="w-9 h-9 flex items-center justify-center text-3xl hover:bg-[#21262d] rounded-2xl active:scale-95">‹</button>
-                    <h2 id="month-title" class="text-2xl font-semibold text-white"></h2>
-                    <button onclick="nextMonth()" class="w-9 h-9 flex items-center justify-center text-3xl hover:bg-[#21262d] rounded-2xl active:scale-95">›</button>
+        <!-- Calendar View with LEFT Sidebar -->
+        <div id="view-0" class="view grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Sidebar -->
+            <div class="lg:col-span-3">
+                <div class="bg-[#161b22] rounded-3xl p-6 h-full sticky top-6">
+                    <h3 id="sidebar-date" class="text-xl font-semibold mb-4">Events for this day</h3>
+                    <div id="sidebar-events" class="space-y-4 min-h-[400px]"></div>
+                    <button onclick="showAddEventModal()" 
+                            class="mt-6 w-full py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl flex items-center justify-center gap-2">
+                        <span class="text-xl">+</span> Add Event
+                    </button>
                 </div>
-                <button onclick="goToToday()" class="px-5 py-2 bg-[#21262d] rounded-2xl text-sm font-medium">Today</button>
             </div>
 
-            <div class="grid grid-cols-7 gap-px bg-[#21262d] rounded-3xl overflow-hidden shadow-xl">
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">S</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">M</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">T</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">W</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">T</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">F</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">S</div>
-                <div id="calendar-grid" class="grid grid-cols-7 col-span-7 gap-px"></div>
-            </div>
+            <!-- Main Calendar -->
+            <div class="lg:col-span-9">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-3">
+                        <button onclick="prevMonth()" class="w-9 h-9 flex items-center justify-center text-3xl hover:bg-[#21262d] rounded-2xl active:scale-95">‹</button>
+                        <h2 id="month-title" class="text-2xl font-semibold text-white"></h2>
+                        <button onclick="nextMonth()" class="w-9 h-9 flex items-center justify-center text-3xl hover:bg-[#21262d] rounded-2xl active:scale-95">›</button>
+                    </div>
+                    <button onclick="goToToday()" class="px-5 py-2 bg-[#21262d] rounded-2xl text-sm font-medium">Today</button>
+                </div>
 
-            <div class="mt-8 lg:hidden bg-[#161b22] rounded-3xl p-6">
-                <h3 id="sidebar-date-mobile" class="text-lg font-semibold mb-4"></h3>
-                <div id="sidebar-events-mobile" class="space-y-4"></div>
+                <div class="grid grid-cols-7 gap-px bg-[#21262d] rounded-3xl overflow-hidden shadow-xl">
+                    <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">S</div>
+                    <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">M</div>
+                    <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">T</div>
+                    <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">W</div>
+                    <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">T</div>
+                    <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">F</div>
+                    <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">S</div>
+                    <div id="calendar-grid" class="grid grid-cols-7 col-span-7 gap-px"></div>
+                </div>
             </div>
         </div>
 
@@ -137,7 +145,7 @@
             </div>
         </div>
 
-        <!-- Week View - Fixed to match screenshot style -->
+        <!-- Week View -->
         <div id="view-2" class="view hidden">
             <div class="flex items-center justify-between mb-6">
                 <h2 id="week-title" class="text-2xl font-semibold"></h2>
@@ -149,7 +157,7 @@
             <div id="week-grid" class="grid grid-cols-1 md:grid-cols-7 gap-4"></div>
         </div>
 
-        <!-- All Events & Alarms (kept simple) -->
+        <!-- All Events -->
         <div id="view-3" class="view hidden">
             <h2 class="text-2xl font-semibold mb-6">All Events</h2>
             <input id="search-input" placeholder="Search events..." class="w-full bg-[#21262d] border border-transparent focus:border-[#58a6ff] rounded-2xl px-5 py-4 mb-6 outline-none" onkeyup="if(event.key==='Enter') filterEvents()">
@@ -161,13 +169,14 @@
             </div>
         </div>
 
+        <!-- Alarms -->
         <div id="view-4" class="view hidden">
             <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">🛎️ Active Alarms <span id="alarm-count-badge" class="bg-emerald-400 text-black px-3 py-1 text-xs rounded-3xl font-medium">0</span></h2>
             <div id="alarms-list" class="space-y-4"></div>
         </div>
     </div>
 
-    <!-- Event Modal with Recurring -->
+    <!-- Event Modal -->
     <div id="event-modal" onclick="if(event.target.id==='event-modal') hideModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
         <div onclick="event.stopImmediatePropagation()" class="bg-[#161b22] w-full max-w-lg mx-4 rounded-3xl overflow-hidden">
             <div class="p-6 sm:p-8">
@@ -182,15 +191,6 @@
                         <div><label class="block text-xs text-[#8b949e] mb-2">Start</label><input id="event-start" type="time" value="09:00" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none"></div>
                         <div><label class="block text-xs text-[#8b949e] mb-2">End</label><input id="event-end" type="time" value="10:00" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none"></div>
                     </div>
-                    <div>
-                        <label class="block text-xs text-[#8b949e] mb-2">Recurring</label>
-                        <select id="event-recurring" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none">
-                            <option value="none">None</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
                     <textarea id="event-desc" rows="3" placeholder="Notes (optional)" class="w-full bg-[#21262d] rounded-3xl px-5 py-4 outline-none resize-none"></textarea>
                 </div>
             </div>
@@ -201,7 +201,7 @@
         </div>
     </div>
 
-    <!-- Schedule Template Modal with Multi-day support -->
+    <!-- Schedule Template Modal -->
     <div id="schedule-template-modal" onclick="if(event.target.id==='schedule-template-modal') hideScheduleModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110]">
         <div onclick="event.stopImmediatePropagation()" class="bg-[#161b22] w-full max-w-2xl mx-4 rounded-3xl overflow-hidden">
             <div class="p-6">
@@ -250,9 +250,9 @@
             const savedTemplates = localStorage.getItem('samayamTemplates')
             templates = savedTemplates ? JSON.parse(savedTemplates) : [
                 { id: 1, name: "Work Week", slots: [
-                    {title: "Morning Routine", start: "06:30", end: "07:30", days: "Mon-Fri"},
-                    {title: "Deep Work", start: "09:00", end: "12:00", days: "Mon-Fri"},
-                    {title: "Lunch", start: "13:00", end: "14:00", days: "Mon-Fri"}
+                    {title: "Morning Routine", start: "06:30", end: "07:30"},
+                    {title: "Deep Work", start: "09:00", end: "12:00"},
+                    {title: "Lunch", start: "13:00", end: "14:00"}
                 ] }
             ]
         }
@@ -314,35 +314,36 @@
         }
 
         function renderSidebar() {
-            const container = document.getElementById('sidebar-events-mobile')
+            const container = document.getElementById('sidebar-events')
             container.innerHTML = ''
 
             const dateObj = new Date(selectedDateForSidebar)
-            document.getElementById('sidebar-date-mobile').textContent = 
-                `Events · ${dateObj.toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'short'})}`
+            document.getElementById('sidebar-date').textContent = 
+                `Events on ${dateObj.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}`
 
             const dayEvents = events.filter(e => e.date === selectedDateForSidebar)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime))
 
             if (dayEvents.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-[#8b949e]">No events</div>`
+                container.innerHTML = `<div class="text-center py-12 text-[#8b949e]">No events on this day</div>`
                 return
             }
 
             dayEvents.forEach(ev => {
                 const div = document.createElement('div')
-                div.className = 'bg-[#21262d] rounded-2xl p-4 cursor-pointer hover:bg-[#30363d]'
+                div.className = 'bg-[#21262d] rounded-2xl p-5 cursor-pointer hover:bg-[#30363d]'
                 div.onclick = () => editEvent(ev.id)
                 div.innerHTML = `
-                    <div class="flex justify-between text-sm">
+                    <div class="flex justify-between items-start">
                         <div class="font-medium">${ev.title}</div>
-                        <div class="font-mono text-emerald-400">${ev.startTime}</div>
+                        <div class="font-mono text-xs text-emerald-400">${ev.startTime}–${ev.endTime}</div>
                     </div>
                 `
                 container.appendChild(div)
             })
         }
 
-        // Day Plan (unchanged)
+        // Day Plan
         function renderDayPlan() {
             const date = new Date(currentDayPlanDate)
             document.getElementById('day-plan-date').textContent = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -384,12 +385,12 @@
             })
         }
 
-        // Week View - Matched to your screenshot
+        // Week View
         function renderWeekView() {
             const start = new Date(currentWeekStart)
             start.setDate(start.getDate() - start.getDay() + 1)
 
-            document.getElementById('week-title').innerHTML = `Week of ${start.toLocaleDateString('en-IN', {day:'numeric', month:'short'})} – ${new Date(start.getTime() + 6*86400000).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}`
+            document.getElementById('week-title').innerHTML = `Week of ${start.toLocaleDateString('en-IN', {day:'numeric', month:'short'})}`
 
             const grid = document.getElementById('week-grid')
             grid.innerHTML = ''
@@ -439,7 +440,7 @@
         function prevWeek() { currentWeekStart.setDate(currentWeekStart.getDate() - 7); renderWeekView(); }
         function nextWeek() { currentWeekStart.setDate(currentWeekStart.getDate() + 7); renderWeekView(); }
 
-        // Schedule Templates with multi-day support
+        // Schedule Templates
         function openScheduleTemplateModal() {
             if (!templates.length) templates = [{ id: Date.now(), name: "Default Schedule", slots: [] }]
             currentTemplateIndex = 0
@@ -482,7 +483,6 @@
                     <input type="time" value="${slot.start}" oninput="templates[${currentTemplateIndex}].slots[${i}].start=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-28 text-sm">
                     <span class="text-[#8b949e]">→</span>
                     <input type="time" value="${slot.end}" oninput="templates[${currentTemplateIndex}].slots[${i}].end=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-28 text-sm">
-                    <input type="text" value="${slot.days || 'Mon-Fri'}" oninput="templates[${currentTemplateIndex}].slots[${i}].days=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-24 text-sm" placeholder="Days">
                     <button onclick="removeTemplateSlot(${i});event.stopImmediatePropagation()" class="text-red-400 text-xl">×</button>
                 `
                 container.appendChild(row)
@@ -498,7 +498,7 @@
         }
 
         function addTemplateSlot() {
-            templates[currentTemplateIndex].slots.push({title: "New Slot", start: "09:00", end: "10:00", days: "Mon-Fri"})
+            templates[currentTemplateIndex].slots.push({title: "New Slot", start: "09:00", end: "10:00"})
             renderCurrentTemplateSlots()
         }
 
@@ -536,6 +536,7 @@
             currentYear = now.getFullYear()
             selectedDateForSidebar = now.toISOString().slice(0,10)
             renderCalendar()
+            renderSidebar()
         }
 
         function prevDayPlan() {
@@ -731,12 +732,12 @@
             reader.readAsText(file)
         }
 
-        // Init
+        // Initialize
         window.onload = () => {
             loadData()
             renderAllViews()
-            switchTab(2) // Start on Week View to match your screenshot
-            showToast('Samayam Beta 1.0 • Multi-day Schedules Ready', 2200)
+            switchTab(0)
+            showToast('Samayam Beta 1.0 • Sidebar Restored', 2200)
         }
     </script>
 </body>
