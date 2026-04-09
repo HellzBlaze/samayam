@@ -40,7 +40,7 @@
                 <h1 class="text-3xl font-semibold tracking-tighter logo-font text-white">Samayam</h1>
             </div>
 
-            <!-- Tabs - Responsive -->
+            <!-- Tabs -->
             <div class="flex bg-[#161b22] rounded-3xl p-1 text-sm font-medium border border-[#21262d] overflow-x-auto whitespace-nowrap">
                 <button onclick="switchTab(0)" id="tab-0" class="tab-btn px-5 py-2.5 rounded-3xl">📅 Calendar</button>
                 <button onclick="switchTab(1)" id="tab-1" class="tab-btn px-5 py-2.5 rounded-3xl">🗓️ Day Plan</button>
@@ -63,7 +63,7 @@
     </header>
 
     <div class="max-w-screen-2xl mx-auto px-4 md:px-8 py-6">
-        <!-- Calendar View (Restored old interface) -->
+        <!-- Calendar View -->
         <div id="view-0" class="view">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-4">
@@ -87,7 +87,7 @@
             </div>
         </div>
 
-        <!-- Day Plan View (Separate - Timetune style) -->
+        <!-- Day Plan View -->
         <div id="view-1" class="view hidden">
             <div class="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
                 <div>
@@ -95,18 +95,28 @@
                     <p id="day-plan-dayname" class="text-[#8b949e] text-lg"></p>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="prevDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">← Prev Day</button>
-                    <button onclick="nextDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">Next Day →</button>
-                    <button onclick="goToTodayInDayPlan()" class="px-6 py-3 bg-[#58a6ff] text-white rounded-2xl">Today</button>
+                    <button onclick="prevDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">← Prev</button>
+                    <button onclick="nextDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">Next →</button>
+                    <button onclick="goToTodayInDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">Today</button>
+                    <button onclick="showAddEventModal()" 
+                            class="px-6 py-3 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl flex items-center gap-2">
+                        <span class="text-xl">+</span> Add Slot
+                    </button>
                 </div>
             </div>
 
             <div id="hourly-schedule" class="bg-[#161b22] rounded-3xl border border-[#21262d] max-h-[75vh] overflow-auto"></div>
         </div>
 
-        <!-- Week View -->
+        <!-- Week View (New) -->
         <div id="view-2" class="view hidden">
-            <h2 id="week-title" class="text-3xl font-semibold mb-6">Week View</h2>
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="week-title" class="text-3xl font-semibold"></h2>
+                <div class="flex gap-3">
+                    <button onclick="prevWeek()" class="px-6 py-3 bg-[#21262d] rounded-2xl">← Previous Week</button>
+                    <button onclick="nextWeek()" class="px-6 py-3 bg-[#21262d] rounded-2xl">Next Week →</button>
+                </div>
+            </div>
             <div id="week-grid" class="grid grid-cols-1 md:grid-cols-7 gap-4"></div>
         </div>
 
@@ -142,16 +152,16 @@
         </div>
     </div>
 
-    <!-- Event Modal -->
+    <!-- Event Modal (supports custom times) -->
     <div id="event-modal" onclick="if(event.target.id==='event-modal') hideModal()" 
          class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
         <div onclick="event.stopImmediatePropagation()" 
              class="bg-[#161b22] w-full max-w-lg mx-4 rounded-3xl overflow-hidden">
             <div class="p-8">
-                <h3 id="modal-title" class="text-2xl font-semibold mb-6">New Event</h3>
+                <h3 id="modal-title" class="text-2xl font-semibold mb-6">Add New Slot</h3>
                 
                 <div class="space-y-6">
-                    <input id="event-title" type="text" placeholder="Event title" 
+                    <input id="event-title" type="text" placeholder="Event / Slot title" 
                            class="w-full bg-[#21262d] rounded-2xl px-6 py-4 text-lg outline-none focus:border-[#58a6ff]">
 
                     <div class="grid grid-cols-2 gap-6">
@@ -190,7 +200,7 @@
             
             <div class="px-8 py-6 border-t border-[#21262d] flex gap-4">
                 <button onclick="hideModal()" class="flex-1 py-4 text-[#8b949e] font-medium">Cancel</button>
-                <button onclick="saveEvent()" class="flex-1 py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl font-medium">Save Event</button>
+                <button onclick="saveEvent()" class="flex-1 py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl font-medium">Save Slot</button>
             </div>
         </div>
     </div>
@@ -205,6 +215,7 @@
         let currentMonth = new Date().getMonth()
         let currentYear = new Date().getFullYear()
         let currentDayPlanDate = new Date().toISOString().slice(0, 10)
+        let currentWeekStart = new Date()
         let editingEventId = null
 
         function loadEvents() {
@@ -223,7 +234,7 @@
             setTimeout(() => toast.classList.add('hidden'), time)
         }
 
-        // ==================== CALENDAR VIEW ====================
+        // Calendar
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid')
             grid.innerHTML = ''
@@ -234,7 +245,6 @@
             document.getElementById('month-title').textContent = 
                 new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })
 
-            // Previous month filler
             for (let i = firstDay - 1; i >= 0; i--) {
                 const el = document.createElement('div')
                 el.className = 'calendar-day bg-[#161b22] p-4 opacity-30'
@@ -242,14 +252,12 @@
                 grid.appendChild(el)
             }
 
-            // Current month days
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                 const isToday = dateStr === new Date().toISOString().slice(0, 10)
 
                 const dayEl = document.createElement('div')
                 dayEl.className = `calendar-day bg-[#161b22] p-4 flex flex-col cursor-pointer border-b border-r border-[#21262d] ${isToday ? 'ring-2 ring-[#58a6ff]' : ''}`
-
                 dayEl.innerHTML = `<div class="text-right font-medium ${isToday ? 'text-[#58a6ff]' : ''}">${day}</div>`
 
                 const dayEvents = events.filter(e => e.date === dateStr)
@@ -274,18 +282,8 @@
             }
         }
 
-        function prevMonth() {
-            currentMonth--
-            if (currentMonth < 0) { currentMonth = 11; currentYear-- }
-            renderCalendar()
-        }
-
-        function nextMonth() {
-            currentMonth++
-            if (currentMonth > 11) { currentMonth = 0; currentYear++ }
-            renderCalendar()
-        }
-
+        function prevMonth() { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); }
+        function nextMonth() { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar(); }
         function goToToday() {
             const now = new Date()
             currentMonth = now.getMonth()
@@ -293,7 +291,7 @@
             renderCalendar()
         }
 
-        // ==================== DAY PLAN VIEW ====================
+        // Day Plan
         function renderDayPlan() {
             const date = new Date(currentDayPlanDate)
             document.getElementById('day-plan-date').textContent = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -307,43 +305,42 @@
 
             for (let h = 0; h < 24; h++) {
                 const timeStr = `${h.toString().padStart(2, '0')}:00`
-
                 const slotEvents = dayEvents.filter(ev => parseInt(ev.startTime.split(':')[0]) === h)
 
-                const slotHTML = document.createElement('div')
-                slotHTML.className = `hour-slot flex gap-6 border-b border-[#21262d] py-5 px-6 last:border-none cursor-pointer`
+                const slot = document.createElement('div')
+                slot.className = `hour-slot flex gap-6 border-b border-[#21262d] py-5 px-6 last:border-none cursor-pointer`
 
-                slotHTML.innerHTML = `
+                slot.innerHTML = `
                     <div class="w-20 font-mono text-sm text-[#8b949e] pt-1">${timeStr}</div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1">
                         ${slotEvents.length ? slotEvents.map(ev => `
                             <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" 
                                  class="event-bar bg-[#21262d] hover:bg-[#30363d] rounded-2xl p-5 mb-4 cursor-pointer">
-                                <div class="flex justify-between items-start">
-                                    <div class="font-medium text-lg">${ev.title}</div>
+                                <div class="flex justify-between">
+                                    <div class="font-medium">${ev.title}</div>
                                     <div class="font-mono text-xs text-emerald-400">${ev.startTime}–${ev.endTime}</div>
                                 </div>
                                 ${ev.description ? `<div class="text-sm text-[#8b949e] mt-2">${ev.description}</div>` : ''}
-                                ${ev.alarm ? `<div class="mt-3 inline-flex items-center gap-1 text-xs bg-emerald-900/70 text-emerald-400 px-4 py-1 rounded-3xl">🛎️ ${ev.alarm} min before</div>` : ''}
+                                ${ev.alarm ? `<div class="mt-3 text-xs bg-emerald-900 text-emerald-400 px-4 py-1 rounded-3xl inline-flex">🛎️ ${ev.alarm} min</div>` : ''}
                             </div>
                         `).join('') : `
-                            <div onclick="quickAddToDayPlan('${timeStr}')" 
-                                 class="border border-dashed border-[#30363d] hover:border-[#58a6ff] rounded-3xl py-10 text-center text-[#8b949e] hover:text-white">
-                                Click to add event at ${timeStr}
+                            <div onclick="quickAddSlot('${timeStr}')" 
+                                 class="border border-dashed border-[#30363d] hover:border-[#58a6ff] rounded-3xl py-10 text-center text-[#8b949e] hover:text-white text-sm">
+                                Tap to add slot at ${timeStr}
                             </div>
                         `}
                     </div>
                 `
-                container.appendChild(slotHTML)
+                container.appendChild(slot)
             }
         }
 
-        function quickAddToDayPlan(startTime) {
+        function quickAddSlot(startTime) {
             editingEventId = null
             document.getElementById('event-date').value = currentDayPlanDate
             document.getElementById('event-start').value = startTime
-            document.getElementById('event-end').value = `${(parseInt(startTime) + 1).toString().padStart(2,'0')}:00`
-            document.getElementById('modal-title').textContent = `Add Event at ${startTime}`
+            document.getElementById('event-end').value = `${(parseInt(startTime.split(':')[0]) + 1).toString().padStart(2, '0')}:00`
+            document.getElementById('modal-title').textContent = 'Add New Slot'
             document.getElementById('event-modal').classList.remove('hidden')
             document.getElementById('event-modal').classList.add('flex')
         }
@@ -367,11 +364,74 @@
             renderDayPlan()
         }
 
-        // ==================== MODAL & CRUD ====================
+        // Week View
+        function renderWeekView() {
+            const start = new Date(currentWeekStart)
+            start.setDate(start.getDate() - start.getDay() + 1) // Monday start
+
+            document.getElementById('week-title').innerHTML = `
+                Week of ${start.toLocaleDateString('en-IN', {day:'numeric', month:'short'})} 
+                – ${new Date(start.getTime() + 6*86400000).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}
+            `
+
+            const grid = document.getElementById('week-grid')
+            grid.innerHTML = ''
+
+            for (let i = 0; i < 7; i++) {
+                const dayDate = new Date(start)
+                dayDate.setDate(dayDate.getDate() + i)
+                const dateStr = dayDate.toISOString().slice(0,10)
+
+                const col = document.createElement('div')
+                col.className = 'bg-[#161b22] rounded-3xl overflow-hidden border border-[#21262d]'
+
+                col.innerHTML = `
+                    <div class="p-4 border-b border-[#21262d] text-center">
+                        <div class="text-xs text-[#8b949e]">${dayDate.toLocaleString('default', {weekday: 'short'})}</div>
+                        <div class="text-2xl font-semibold ${dateStr === new Date().toISOString().slice(0,10) ? 'text-[#58a6ff]' : ''}">${dayDate.getDate()}</div>
+                    </div>
+                `
+
+                const dayEvents = events.filter(e => e.date === dateStr)
+                    .sort((a,b) => a.startTime.localeCompare(b.startTime))
+
+                const content = document.createElement('div')
+                content.className = 'p-4 space-y-3 min-h-[300px]'
+
+                if (dayEvents.length === 0) {
+                    content.innerHTML = `<div class="text-center py-12 text-[#8b949e] text-sm italic">No slots</div>`
+                } else {
+                    dayEvents.forEach(ev => {
+                        content.innerHTML += `
+                            <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" 
+                                 class="event-bar bg-[#21262d] hover:bg-[#30363d] rounded-2xl p-4 cursor-pointer">
+                                <div class="font-medium">${ev.title}</div>
+                                <div class="text-xs text-emerald-400 font-mono mt-1">${ev.startTime} – ${ev.endTime}</div>
+                                ${ev.description ? `<div class="text-xs text-[#8b949e] mt-2">${ev.description}</div>` : ''}
+                            </div>
+                        `
+                    })
+                }
+                col.appendChild(content)
+                grid.appendChild(col)
+            }
+        }
+
+        function prevWeek() {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7)
+            renderWeekView()
+        }
+
+        function nextWeek() {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7)
+            renderWeekView()
+        }
+
+        // Modal & Save
         function showAddEventModal() {
             editingEventId = null
-            document.getElementById('modal-title').textContent = 'New Event'
-            document.getElementById('event-date').value = new Date().toISOString().slice(0,10)
+            document.getElementById('modal-title').textContent = 'Add New Slot'
+            document.getElementById('event-date').value = currentDayPlanDate || new Date().toISOString().slice(0,10)
             document.getElementById('event-title').value = ''
             document.getElementById('event-desc').value = ''
             document.getElementById('event-start').value = '09:00'
@@ -389,7 +449,7 @@
 
         function saveEvent() {
             const title = document.getElementById('event-title').value.trim()
-            if (!title) return showToast('Please enter an event title')
+            if (!title) return showToast('Please enter a title for the slot')
 
             const newEvent = {
                 id: editingEventId || Date.now(),
@@ -411,14 +471,14 @@
             saveEvents()
             hideModal()
             renderAllViews()
-            showToast('✅ Event saved')
+            showToast('✅ Slot saved')
         }
 
         function editEvent(id) {
             const ev = events.find(e => e.id === id)
             if (!ev) return
             editingEventId = id
-            document.getElementById('modal-title').textContent = 'Edit Event'
+            document.getElementById('modal-title').textContent = 'Edit Slot'
             document.getElementById('event-title').value = ev.title
             document.getElementById('event-date').value = ev.date
             document.getElementById('event-start').value = ev.startTime
@@ -430,20 +490,15 @@
         }
 
         function deleteEvent(id) {
-            if (confirm('Delete this event permanently?')) {
+            if (confirm('Delete this slot?')) {
                 events = events.filter(e => e.id !== id)
                 saveEvents()
                 renderAllViews()
-                showToast('Event deleted')
+                showToast('Slot deleted')
             }
         }
 
-        // ==================== OTHER VIEWS ====================
-        function renderWeekView() {
-            document.getElementById('week-title').innerHTML = `Week of ${new Date().toLocaleDateString('en-IN', {month:'long', day:'numeric'})} <span class="text-sm text-[#8b949e]">(Simple view)</span>`
-            document.getElementById('week-grid').innerHTML = `<div class="col-span-full text-center py-20 text-[#8b949e]">Week view coming in future update</div>`
-        }
-
+        // Other views
         function renderEventsTable(filter = '') {
             const tbody = document.getElementById('events-table')
             tbody.innerHTML = ''
@@ -476,13 +531,13 @@
             document.getElementById('alarm-count-badge').textContent = active.length
 
             if (active.length === 0) {
-                container.innerHTML = `<div class="bg-[#21262d] rounded-3xl p-12 text-center text-[#8b949e]">No active alarms set</div>`
+                container.innerHTML = `<div class="bg-[#21262d] rounded-3xl p-12 text-center text-[#8b949e]">No active alarms</div>`
                 return
             }
 
             active.forEach(ev => {
                 const card = document.createElement('div')
-                card.className = 'bg-[#21262d] rounded-3xl p-6 flex justify-between'
+                card.className = 'bg-[#21262d] rounded-3xl p-6 flex justify-between items-center'
                 card.innerHTML = `
                     <div>
                         <div class="font-semibold">${ev.title}</div>
@@ -497,6 +552,7 @@
         function renderAllViews() {
             renderCalendar()
             renderDayPlan()
+            renderWeekView()
             renderEventsTable()
             renderAlarms()
         }
@@ -520,15 +576,14 @@
             renderEventsTable(term)
         }
 
-        // Export / Import
         function exportData() {
-            if (!events.length) return showToast('No events to export')
+            if (!events.length) return showToast('No slots to export')
             const str = JSON.stringify(events, null, 2)
             const blob = new Blob([str], {type: 'application/json'})
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `samayam-${new Date().toISOString().slice(0,10)}.json`
+            a.download = `samayam-backup-${new Date().toISOString().slice(0,10)}.json`
             a.click()
             showToast('✅ Backup exported')
         }
@@ -542,8 +597,8 @@
                     events = JSON.parse(ev.target.result)
                     saveEvents()
                     renderAllViews()
-                    showToast(`✅ Imported ${events.length} events`)
-                } catch (err) {
+                    showToast(`✅ Imported ${events.length} slots`)
+                } catch(err) {
                     showToast('❌ Invalid file')
                 }
             }
@@ -554,7 +609,7 @@
         window.onload = () => {
             loadEvents()
             renderAllViews()
-            switchTab(0)   // Start with Calendar tab
+            switchTab(0) // Start on Calendar
             showToast('Welcome to <strong>Samayam</strong> ⏱️', 2000)
         }
     </script>
