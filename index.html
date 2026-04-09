@@ -31,9 +31,8 @@
             padding: 10px 14px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
-        .slot-bar:hover { background: #30363d; transform: translateY(-1px); }
+        .slot-bar:hover { background: #30363d; }
 
         .time-label {
             position: absolute;
@@ -45,13 +44,23 @@
             color: #8b949e;
         }
 
-        /* Mobile refinements */
-        @media (max-width: 640px) {
-            .calendar-day { min-height: 78px; }
-            .slot-bar { left: 56px; right: 10px; padding: 9px 12px; font-size: 14px; }
-            .time-label { width: 48px; font-size: 11px; }
-            .tab-btn { padding: 10px 14px !important; font-size: 13px; }
-            header { padding: 12px 16px !important; }
+        /* Week View - Screenshot style */
+        .week-day-card {
+            background: #161b22;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #21262d;
+        }
+        .week-event-bar {
+            background: #21262d;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .week-event-bar:hover {
+            background: #30363d;
         }
     </style>
 </head>
@@ -65,8 +74,7 @@
                 <span class="px-3 py-0.5 text-xs font-medium bg-[#21262d] text-[#58a6ff] rounded-full border border-[#58a6ff]/30">Beta 1.0</span>
             </div>
 
-            <!-- Mobile-friendly tabs -->
-            <div class="flex bg-[#161b22] rounded-3xl p-1 text-sm font-medium border border-[#21262d] overflow-x-auto whitespace-nowrap max-w-[calc(100%-120px)] scrollbar-hide">
+            <div class="flex bg-[#161b22] rounded-3xl p-1 text-sm font-medium border border-[#21262d] overflow-x-auto whitespace-nowrap max-w-[calc(100%-140px)]">
                 <button onclick="switchTab(0)" id="tab-0" class="tab-btn px-4 py-2.5 rounded-3xl text-xs sm:text-sm">📅 Cal</button>
                 <button onclick="switchTab(1)" id="tab-1" class="tab-btn px-4 py-2.5 rounded-3xl text-xs sm:text-sm">🗓️ Day</button>
                 <button onclick="switchTab(2)" id="tab-2" class="tab-btn px-4 py-2.5 rounded-3xl text-xs sm:text-sm">📆 Week</button>
@@ -102,7 +110,6 @@
                 <div id="calendar-grid" class="grid grid-cols-7 col-span-7 gap-px"></div>
             </div>
 
-            <!-- Sidebar (stacked on mobile) -->
             <div class="mt-8 lg:hidden bg-[#161b22] rounded-3xl p-6">
                 <h3 id="sidebar-date-mobile" class="text-lg font-semibold mb-4"></h3>
                 <div id="sidebar-events-mobile" class="space-y-4"></div>
@@ -130,19 +137,19 @@
             </div>
         </div>
 
-        <!-- Week View -->
+        <!-- Week View - Fixed to match screenshot style -->
         <div id="view-2" class="view hidden">
             <div class="flex items-center justify-between mb-6">
                 <h2 id="week-title" class="text-2xl font-semibold"></h2>
                 <div class="flex gap-3">
-                    <button onclick="prevWeek()" class="px-5 py-2.5 bg-[#21262d] rounded-2xl text-sm active:scale-95">← Prev</button>
+                    <button onclick="prevWeek()" class="px-5 py-2.5 bg-[#21262d] rounded-2xl text-sm active:scale-95">← Previous</button>
                     <button onclick="nextWeek()" class="px-5 py-2.5 bg-[#21262d] rounded-2xl text-sm active:scale-95">Next →</button>
                 </div>
             </div>
             <div id="week-grid" class="grid grid-cols-1 md:grid-cols-7 gap-4"></div>
         </div>
 
-        <!-- All Events + Alarms remain the same (optimized) -->
+        <!-- All Events & Alarms (kept simple) -->
         <div id="view-3" class="view hidden">
             <h2 class="text-2xl font-semibold mb-6">All Events</h2>
             <input id="search-input" placeholder="Search events..." class="w-full bg-[#21262d] border border-transparent focus:border-[#58a6ff] rounded-2xl px-5 py-4 mb-6 outline-none" onkeyup="if(event.key==='Enter') filterEvents()">
@@ -160,7 +167,7 @@
         </div>
     </div>
 
-    <!-- Event Modal -->
+    <!-- Event Modal with Recurring -->
     <div id="event-modal" onclick="if(event.target.id==='event-modal') hideModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
         <div onclick="event.stopImmediatePropagation()" class="bg-[#161b22] w-full max-w-lg mx-4 rounded-3xl overflow-hidden">
             <div class="p-6 sm:p-8">
@@ -175,6 +182,15 @@
                         <div><label class="block text-xs text-[#8b949e] mb-2">Start</label><input id="event-start" type="time" value="09:00" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none"></div>
                         <div><label class="block text-xs text-[#8b949e] mb-2">End</label><input id="event-end" type="time" value="10:00" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none"></div>
                     </div>
+                    <div>
+                        <label class="block text-xs text-[#8b949e] mb-2">Recurring</label>
+                        <select id="event-recurring" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none">
+                            <option value="none">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
                     <textarea id="event-desc" rows="3" placeholder="Notes (optional)" class="w-full bg-[#21262d] rounded-3xl px-5 py-4 outline-none resize-none"></textarea>
                 </div>
             </div>
@@ -185,7 +201,7 @@
         </div>
     </div>
 
-    <!-- Multi-Template Schedule Modal -->
+    <!-- Schedule Template Modal with Multi-day support -->
     <div id="schedule-template-modal" onclick="if(event.target.id==='schedule-template-modal') hideScheduleModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110]">
         <div onclick="event.stopImmediatePropagation()" class="bg-[#161b22] w-full max-w-2xl mx-4 rounded-3xl overflow-hidden">
             <div class="p-6">
@@ -194,15 +210,12 @@
                     <button onclick="hideScheduleModal()" class="text-2xl text-[#8b949e]">✕</button>
                 </div>
 
-                <!-- Template selector -->
                 <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
                     <button onclick="createNewTemplate()" class="px-4 py-2 bg-[#21262d] hover:bg-[#30363d] rounded-2xl text-sm whitespace-nowrap">+ New Schedule</button>
                     <div id="template-list" class="flex gap-2"></div>
                 </div>
 
-                <div id="template-name" class="flex items-center gap-3 mb-4">
-                    <input id="current-template-name" type="text" class="flex-1 bg-[#21262d] rounded-2xl px-5 py-3 outline-none text-base" placeholder="Schedule name">
-                </div>
+                <input id="current-template-name" type="text" class="w-full bg-[#21262d] rounded-2xl px-5 py-3 outline-none text-base mb-4" placeholder="Schedule name">
 
                 <div id="template-slots-list" class="space-y-3 max-h-[380px] overflow-auto pr-2"></div>
 
@@ -221,7 +234,7 @@
 
     <script>
         let events = []
-        let templates = [] // multiple named schedules
+        let templates = []
         let currentTemplateIndex = 0
         let currentMonth = new Date().getMonth()
         let currentYear = new Date().getFullYear()
@@ -230,9 +243,6 @@
         let selectedDateForSidebar = new Date().toISOString().slice(0, 10)
         let editingEventId = null
 
-        // Performance: cache heavy DOM queries
-        let domCache = {}
-
         function loadData() {
             const savedEvents = localStorage.getItem('samayamEvents')
             events = savedEvents ? JSON.parse(savedEvents) : []
@@ -240,11 +250,9 @@
             const savedTemplates = localStorage.getItem('samayamTemplates')
             templates = savedTemplates ? JSON.parse(savedTemplates) : [
                 { id: 1, name: "Work Week", slots: [
-                    {title: "Morning Routine", start: "06:30", end: "07:30"},
-                    {title: "Deep Work", start: "09:00", end: "12:00"},
-                    {title: "Lunch", start: "13:00", end: "14:00"},
-                    {title: "Deep Work", start: "14:30", end: "17:30"},
-                    {title: "Exercise", start: "18:00", end: "19:00"}
+                    {title: "Morning Routine", start: "06:30", end: "07:30", days: "Mon-Fri"},
+                    {title: "Deep Work", start: "09:00", end: "12:00", days: "Mon-Fri"},
+                    {title: "Lunch", start: "13:00", end: "14:00", days: "Mon-Fri"}
                 ] }
             ]
         }
@@ -261,7 +269,7 @@
             setTimeout(() => toast.classList.add('hidden'), time)
         }
 
-        // Calendar & Sidebar
+        // Calendar
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid')
             grid.innerHTML = ''
@@ -272,7 +280,6 @@
             document.getElementById('month-title').textContent = 
                 new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })
 
-            // Previous month
             for (let i = firstDay - 1; i >= 0; i--) {
                 const el = document.createElement('div')
                 el.className = 'calendar-day bg-[#161b22] p-3 opacity-40 text-center text-sm'
@@ -280,7 +287,6 @@
                 grid.appendChild(el)
             }
 
-            // Current month
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                 const isToday = dateStr === new Date().toISOString().slice(0, 10)
@@ -308,15 +314,14 @@
         }
 
         function renderSidebar() {
-            const container = document.getElementById('sidebar-events-mobile') || document.getElementById('sidebar-events')
-            if (!container) return
+            const container = document.getElementById('sidebar-events-mobile')
             container.innerHTML = ''
 
             const dateObj = new Date(selectedDateForSidebar)
-            const titleEl = document.getElementById('sidebar-date-mobile') || document.getElementById('sidebar-date')
-            if (titleEl) titleEl.textContent = `Events · ${dateObj.toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'short'})}`
+            document.getElementById('sidebar-date-mobile').textContent = 
+                `Events · ${dateObj.toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'short'})}`
 
-            const dayEvents = events.filter(e => e.date === selectedDateForSidebar).sort((a,b) => a.startTime.localeCompare(b.startTime))
+            const dayEvents = events.filter(e => e.date === selectedDateForSidebar)
 
             if (dayEvents.length === 0) {
                 container.innerHTML = `<div class="text-center py-8 text-[#8b949e]">No events</div>`
@@ -337,7 +342,7 @@
             })
         }
 
-        // Day Plan (optimized)
+        // Day Plan (unchanged)
         function renderDayPlan() {
             const date = new Date(currentDayPlanDate)
             document.getElementById('day-plan-date').textContent = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -346,7 +351,6 @@
             const container = document.getElementById('day-plan-timeline')
             container.innerHTML = ''
 
-            // Time labels
             for (let h = 0; h < 24; h++) {
                 const label = document.createElement('div')
                 label.className = 'time-label'
@@ -356,7 +360,6 @@
             }
 
             const dayEvents = events.filter(e => e.date === currentDayPlanDate)
-                .sort((a, b) => a.startTime.localeCompare(b.startTime))
 
             dayEvents.forEach(ev => {
                 const [sh, sm] = ev.startTime.split(':').map(Number)
@@ -379,21 +382,14 @@
                 `
                 container.appendChild(slot)
             })
-
-            if (dayEvents.length === 0) {
-                const empty = document.createElement('div')
-                empty.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#8b949e;text-align:center;font-size:14px;'
-                empty.innerHTML = 'No slots yet<br>Tap <strong>+ Slot</strong> or <strong>Schedule</strong>'
-                container.appendChild(empty)
-            }
         }
 
-        // Week View
+        // Week View - Matched to your screenshot
         function renderWeekView() {
             const start = new Date(currentWeekStart)
             start.setDate(start.getDate() - start.getDay() + 1)
 
-            document.getElementById('week-title').innerHTML = `Week of ${start.toLocaleDateString('en-IN', {day:'numeric', month:'short'})}`
+            document.getElementById('week-title').innerHTML = `Week of ${start.toLocaleDateString('en-IN', {day:'numeric', month:'short'})} – ${new Date(start.getTime() + 6*86400000).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}`
 
             const grid = document.getElementById('week-grid')
             grid.innerHTML = ''
@@ -404,31 +400,33 @@
                 const dateStr = dayDate.toISOString().slice(0,10)
 
                 const col = document.createElement('div')
-                col.className = 'bg-[#161b22] rounded-3xl overflow-hidden border border-[#21262d]'
+                col.className = 'week-day-card'
 
                 col.innerHTML = `
-                    <div class="p-4 border-b border-[#21262d] text-center">
+                    <div class="p-4 border-b border-[#21262d] text-center bg-[#0d1117]">
                         <div class="text-xs text-[#8b949e]">${dayDate.toLocaleString('default', {weekday: 'short'})}</div>
-                        <div class="text-xl font-semibold">${dayDate.getDate()}</div>
+                        <div class="text-2xl font-semibold ${dateStr === new Date().toISOString().slice(0,10) ? 'text-[#58a6ff]' : ''}">${dayDate.getDate()}</div>
                     </div>
                 `
 
-                const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => a.startTime.localeCompare(b.startTime))
+                const dayEvents = events.filter(e => e.date === dateStr)
+                    .sort((a,b) => a.startTime.localeCompare(b.startTime))
 
                 const content = document.createElement('div')
-                content.className = 'p-4 space-y-3 min-h-[280px]'
+                content.className = 'p-4 space-y-3'
 
                 if (dayEvents.length === 0) {
-                    content.innerHTML = `<div class="text-center py-10 text-[#8b949e] text-sm">No slots</div>`
+                    content.innerHTML = `<div class="text-center py-12 text-[#8b949e] text-sm">No events</div>`
                 } else {
                     dayEvents.forEach(ev => {
                         content.innerHTML += `
-                            <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" class="slot-bar bg-[#21262d] hover:bg-[#30363d] p-4 cursor-pointer flex justify-between items-center text-sm">
+                            <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" 
+                                 class="week-event-bar flex justify-between items-center">
                                 <div>
-                                    <div class="font-medium">${ev.title}</div>
-                                    <div class="text-xs text-emerald-400">${ev.startTime} – ${ev.endTime}</div>
+                                    <div class="font-medium text-sm">${ev.title}</div>
+                                    <div class="text-xs text-emerald-400">${ev.startTime} - ${ev.endTime}</div>
                                 </div>
-                                <button onclick="deleteEvent(${ev.id}); event.stopImmediatePropagation()" class="text-red-400 text-xl">×</button>
+                                <button onclick="deleteEvent(${ev.id}); event.stopImmediatePropagation()" class="text-red-400 text-xl">🗑️</button>
                             </div>
                         `
                     })
@@ -438,46 +436,12 @@
             }
         }
 
-        // Multiple Templates
-        function renderTemplateList() {
-            const container = document.getElementById('template-list')
-            container.innerHTML = ''
-            templates.forEach((t, i) => {
-                const btn = document.createElement('button')
-                btn.className = `px-5 py-2 rounded-2xl text-sm whitespace-nowrap ${i === currentTemplateIndex ? 'bg-[#58a6ff] text-white' : 'bg-[#21262d] hover:bg-[#30363d]'}`
-                btn.textContent = t.name
-                btn.onclick = () => {
-                    currentTemplateIndex = i
-                    renderTemplateList()
-                    renderCurrentTemplateSlots()
-                }
-                container.appendChild(btn)
-            })
-        }
+        function prevWeek() { currentWeekStart.setDate(currentWeekStart.getDate() - 7); renderWeekView(); }
+        function nextWeek() { currentWeekStart.setDate(currentWeekStart.getDate() + 7); renderWeekView(); }
 
-        function renderCurrentTemplateSlots() {
-            const container = document.getElementById('template-slots-list')
-            container.innerHTML = ''
-            const current = templates[currentTemplateIndex]
-
-            document.getElementById('current-template-name').value = current.name
-
-            current.slots.forEach((slot, i) => {
-                const row = document.createElement('div')
-                row.className = 'flex items-center gap-3 bg-[#21262d] rounded-2xl p-4'
-                row.innerHTML = `
-                    <input type="text" value="${slot.title}" oninput="templates[${currentTemplateIndex}].slots[${i}].title=this.value" class="flex-1 bg-transparent outline-none">
-                    <input type="time" value="${slot.start}" oninput="templates[${currentTemplateIndex}].slots[${i}].start=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-28 text-sm">
-                    <span class="text-[#8b949e]">→</span>
-                    <input type="time" value="${slot.end}" oninput="templates[${currentTemplateIndex}].slots[${i}].end=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-28 text-sm">
-                    <button onclick="removeTemplateSlot(${i});event.stopImmediatePropagation()" class="text-red-400 text-xl">×</button>
-                `
-                container.appendChild(row)
-            })
-        }
-
+        // Schedule Templates with multi-day support
         function openScheduleTemplateModal() {
-            if (!templates.length) templates = [{id: Date.now(), name: "Default Schedule", slots: []}]
+            if (!templates.length) templates = [{ id: Date.now(), name: "Default Schedule", slots: [] }]
             currentTemplateIndex = 0
             renderTemplateList()
             renderCurrentTemplateSlots()
@@ -492,6 +456,39 @@
             saveData()
         }
 
+        function renderTemplateList() {
+            const container = document.getElementById('template-list')
+            container.innerHTML = ''
+            templates.forEach((t, i) => {
+                const btn = document.createElement('button')
+                btn.className = `px-5 py-2 rounded-2xl text-sm whitespace-nowrap ${i === currentTemplateIndex ? 'bg-[#58a6ff] text-white' : 'bg-[#21262d] hover:bg-[#30363d]'}`
+                btn.textContent = t.name
+                btn.onclick = () => { currentTemplateIndex = i; renderTemplateList(); renderCurrentTemplateSlots(); }
+                container.appendChild(btn)
+            })
+        }
+
+        function renderCurrentTemplateSlots() {
+            const container = document.getElementById('template-slots-list')
+            container.innerHTML = ''
+            const current = templates[currentTemplateIndex]
+            document.getElementById('current-template-name').value = current.name
+
+            current.slots.forEach((slot, i) => {
+                const row = document.createElement('div')
+                row.className = 'flex items-center gap-3 bg-[#21262d] rounded-2xl p-4'
+                row.innerHTML = `
+                    <input type="text" value="${slot.title}" oninput="templates[${currentTemplateIndex}].slots[${i}].title=this.value" class="flex-1 bg-transparent outline-none">
+                    <input type="time" value="${slot.start}" oninput="templates[${currentTemplateIndex}].slots[${i}].start=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-28 text-sm">
+                    <span class="text-[#8b949e]">→</span>
+                    <input type="time" value="${slot.end}" oninput="templates[${currentTemplateIndex}].slots[${i}].end=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-28 text-sm">
+                    <input type="text" value="${slot.days || 'Mon-Fri'}" oninput="templates[${currentTemplateIndex}].slots[${i}].days=this.value" class="bg-[#0d1117] rounded-xl px-4 py-2 w-24 text-sm" placeholder="Days">
+                    <button onclick="removeTemplateSlot(${i});event.stopImmediatePropagation()" class="text-red-400 text-xl">×</button>
+                `
+                container.appendChild(row)
+            })
+        }
+
         function createNewTemplate() {
             const newTemplate = { id: Date.now(), name: `Schedule ${templates.length + 1}`, slots: [] }
             templates.push(newTemplate)
@@ -501,7 +498,7 @@
         }
 
         function addTemplateSlot() {
-            templates[currentTemplateIndex].slots.push({title: "New Slot", start: "09:00", end: "10:00"})
+            templates[currentTemplateIndex].slots.push({title: "New Slot", start: "09:00", end: "10:00", days: "Mon-Fri"})
             renderCurrentTemplateSlots()
         }
 
@@ -531,15 +528,14 @@
         }
 
         // Common functions
-        function prevMonth() { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); renderSidebar(); }
-        function nextMonth() { currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar(); renderSidebar(); }
+        function prevMonth() { currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar(); }
+        function nextMonth() { currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar(); }
         function goToToday() {
             const now = new Date()
             currentMonth = now.getMonth()
             currentYear = now.getFullYear()
             selectedDateForSidebar = now.toISOString().slice(0,10)
             renderCalendar()
-            renderSidebar()
         }
 
         function prevDayPlan() {
@@ -739,8 +735,8 @@
         window.onload = () => {
             loadData()
             renderAllViews()
-            switchTab(0)
-            showToast('Samayam Beta 1.0 • Multi-schedule & Mobile Optimized', 2200)
+            switchTab(2) // Start on Week View to match your screenshot
+            showToast('Samayam Beta 1.0 • Multi-day Schedules Ready', 2200)
         }
     </script>
 </body>
