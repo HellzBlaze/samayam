@@ -8,30 +8,23 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
         
-        body {
-            font-family: 'Inter', system_ui, sans-serif;
-        }
-        
-        .logo-font {
-            font-family: 'Space Grotesk', sans-serif;
-        }
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .logo-font { font-family: 'Space Grotesk', sans-serif; }
 
         .calendar-day {
-            min-height: 110px;
-        }
-        
-        .hour-slot {
+            min-height: 120px;
             transition: all 0.2s ease;
         }
-        
+        .calendar-day:hover {
+            background-color: #161b22;
+            transform: scale(1.02);
+        }
         .hour-slot:hover {
             background-color: #1f2937;
         }
-        
         .event-bar {
             animation: fadeIn 0.3s ease forwards;
         }
-        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -47,19 +40,19 @@
                 <h1 class="text-3xl font-semibold tracking-tighter logo-font text-white">Samayam</h1>
             </div>
 
-            <!-- Tabs -->
-            <div class="flex bg-[#161b22] rounded-3xl p-1 text-sm font-medium border border-[#21262d] overflow-x-auto">
-                <button onclick="switchTab(0)" id="tab-0" class="tab-btn px-5 py-2.5 rounded-3xl whitespace-nowrap">📅 Calendar</button>
-                <button onclick="switchTab(1)" id="tab-1" class="tab-btn px-5 py-2.5 rounded-3xl whitespace-nowrap">📆 Week</button>
-                <button onclick="switchTab(2)" id="tab-2" class="tab-btn px-5 py-2.5 rounded-3xl whitespace-nowrap active">🗓️ Day Plan</button>
-                <button onclick="switchTab(3)" id="tab-3" class="tab-btn px-5 py-2.5 rounded-3xl whitespace-nowrap">📋 All Events</button>
-                <button onclick="switchTab(4)" id="tab-4" class="tab-btn px-5 py-2.5 rounded-3xl whitespace-nowrap">🛎️ Alarms</button>
+            <!-- Tabs - Responsive -->
+            <div class="flex bg-[#161b22] rounded-3xl p-1 text-sm font-medium border border-[#21262d] overflow-x-auto whitespace-nowrap">
+                <button onclick="switchTab(0)" id="tab-0" class="tab-btn px-5 py-2.5 rounded-3xl">📅 Calendar</button>
+                <button onclick="switchTab(1)" id="tab-1" class="tab-btn px-5 py-2.5 rounded-3xl">🗓️ Day Plan</button>
+                <button onclick="switchTab(2)" id="tab-2" class="tab-btn px-5 py-2.5 rounded-3xl">📆 Week</button>
+                <button onclick="switchTab(3)" id="tab-3" class="tab-btn px-5 py-2.5 rounded-3xl">📋 All Events</button>
+                <button onclick="switchTab(4)" id="tab-4" class="tab-btn px-5 py-2.5 rounded-3xl">🛎️ Alarms</button>
             </div>
 
             <div class="flex items-center gap-3">
                 <button onclick="showAddEventModal()" 
                         class="bg-[#58a6ff] hover:bg-[#1f6feb] text-white px-5 py-2 rounded-2xl flex items-center gap-2 text-sm font-medium">
-                    <span class="text-xl leading-none">+</span> New
+                    <span class="text-xl">+</span> New Event
                 </button>
                 <button onclick="exportData()" class="hidden md:flex items-center gap-2 px-4 py-2 border border-[#30363d] hover:border-[#58a6ff] rounded-2xl text-sm">Export</button>
                 <label class="hidden md:flex items-center gap-2 px-4 py-2 border border-[#30363d] hover:border-[#58a6ff] rounded-2xl text-sm cursor-pointer">
@@ -70,62 +63,58 @@
     </header>
 
     <div class="max-w-screen-2xl mx-auto px-4 md:px-8 py-6">
-        <!-- Calendar View -->
+        <!-- Calendar View (Restored old interface) -->
         <div id="view-0" class="view">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-4">
-                    <button onclick="prevMonth()" class="w-10 h-10 flex items-center justify-center text-2xl hover:bg-[#21262d] rounded-2xl">‹</button>
-                    <h2 id="month-title" class="text-2xl font-semibold"></h2>
-                    <button onclick="nextMonth()" class="w-10 h-10 flex items-center justify-center text-2xl hover:bg-[#21262d] rounded-2xl">›</button>
+                    <button onclick="prevMonth()" class="w-10 h-10 flex items-center justify-center text-3xl hover:bg-[#21262d] rounded-2xl">‹</button>
+                    <h2 id="month-title" class="text-3xl font-semibold text-white"></h2>
+                    <button onclick="nextMonth()" class="w-10 h-10 flex items-center justify-center text-3xl hover:bg-[#21262d] rounded-2xl">›</button>
                 </div>
-                <button onclick="goToToday()" class="px-6 py-2 bg-[#21262d] rounded-2xl text-sm">Today</button>
+                <button onclick="goToToday()" class="px-6 py-3 bg-[#21262d] hover:bg-[#30363d] rounded-2xl text-sm font-medium">Today</button>
             </div>
 
-            <div class="grid grid-cols-7 gap-px bg-[#21262d] rounded-3xl overflow-hidden">
-                <!-- Weekday headers -->
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">Sun</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">Mon</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">Tue</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">Wed</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">Thu</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">Fri</div>
-                <div class="bg-[#161b22] py-3 text-center text-xs font-medium text-[#8b949e]">Sat</div>
+            <div class="grid grid-cols-7 gap-px bg-[#21262d] rounded-3xl overflow-hidden shadow-xl">
+                <div class="bg-[#161b22] py-4 text-center text-xs font-medium text-[#8b949e]">SUN</div>
+                <div class="bg-[#161b22] py-4 text-center text-xs font-medium text-[#8b949e]">MON</div>
+                <div class="bg-[#161b22] py-4 text-center text-xs font-medium text-[#8b949e]">TUE</div>
+                <div class="bg-[#161b22] py-4 text-center text-xs font-medium text-[#8b949e]">WED</div>
+                <div class="bg-[#161b22] py-4 text-center text-xs font-medium text-[#8b949e]">THU</div>
+                <div class="bg-[#161b22] py-4 text-center text-xs font-medium text-[#8b949e]">FRI</div>
+                <div class="bg-[#161b22] py-4 text-center text-xs font-medium text-[#8b949e]">SAT</div>
                 
                 <div id="calendar-grid" class="grid grid-cols-7 col-span-7 gap-px"></div>
             </div>
         </div>
 
-        <!-- Week View -->
+        <!-- Day Plan View (Separate - Timetune style) -->
         <div id="view-1" class="view hidden">
-            <h2 id="week-title" class="text-2xl font-semibold mb-6"></h2>
-            <div id="week-grid" class="grid grid-cols-1 md:grid-cols-7 gap-4"></div>
-        </div>
-
-        <!-- Day Plan View (New - Timetune style) -->
-        <div id="view-2" class="view">
-            <div class="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center justify-between">
+            <div class="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
                 <div>
-                    <h2 id="day-plan-date" class="text-2xl font-semibold"></h2>
-                    <p id="day-plan-dayname" class="text-[#8b949e]"></p>
+                    <h2 id="day-plan-date" class="text-3xl font-semibold"></h2>
+                    <p id="day-plan-dayname" class="text-[#8b949e] text-lg"></p>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="prevDayPlan()" class="px-5 py-2 bg-[#21262d] rounded-2xl">← Previous</button>
-                    <button onclick="nextDayPlan()" class="px-5 py-2 bg-[#21262d] rounded-2xl">Next →</button>
-                    <button onclick="goToTodayInDayPlan()" class="px-5 py-2 bg-[#58a6ff] text-white rounded-2xl">Today</button>
+                    <button onclick="prevDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">← Prev Day</button>
+                    <button onclick="nextDayPlan()" class="px-6 py-3 bg-[#21262d] rounded-2xl">Next Day →</button>
+                    <button onclick="goToTodayInDayPlan()" class="px-6 py-3 bg-[#58a6ff] text-white rounded-2xl">Today</button>
                 </div>
             </div>
 
-            <!-- Hourly Schedule -->
-            <div id="hourly-schedule" class="bg-[#161b22] rounded-3xl p-4 md:p-6 border border-[#21262d] max-h-[75vh] overflow-auto">
-                <!-- Populated by JavaScript -->
-            </div>
+            <div id="hourly-schedule" class="bg-[#161b22] rounded-3xl border border-[#21262d] max-h-[75vh] overflow-auto"></div>
+        </div>
+
+        <!-- Week View -->
+        <div id="view-2" class="view hidden">
+            <h2 id="week-title" class="text-3xl font-semibold mb-6">Week View</h2>
+            <div id="week-grid" class="grid grid-cols-1 md:grid-cols-7 gap-4"></div>
         </div>
 
         <!-- All Events -->
         <div id="view-3" class="view hidden">
-            <h2 class="text-2xl font-semibold mb-6">All Events</h2>
+            <h2 class="text-3xl font-semibold mb-6">All Events</h2>
             <input id="search-input" placeholder="Search events..." 
-                   class="w-full md:w-96 bg-[#21262d] border border-transparent focus:border-[#58a6ff] rounded-2xl px-6 py-3 mb-6 outline-none"
+                   class="w-full max-w-md bg-[#21262d] border border-transparent focus:border-[#58a6ff] rounded-2xl px-6 py-4 mb-6 outline-none"
                    onkeyup="if(event.key==='Enter') filterEvents()">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -135,7 +124,7 @@
                             <th class="text-left py-4 px-6">Time</th>
                             <th class="text-left py-4 px-6">Event</th>
                             <th class="text-left py-4 px-6">Alarm</th>
-                            <th class="w-24"></th>
+                            <th class="w-28"></th>
                         </tr>
                     </thead>
                     <tbody id="events-table" class="divide-y divide-[#21262d]"></tbody>
@@ -145,34 +134,34 @@
 
         <!-- Alarms -->
         <div id="view-4" class="view hidden">
-            <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+            <h2 class="text-3xl font-semibold mb-6 flex items-center gap-3">
                 🛎️ Active Alarms 
-                <span id="alarm-count-badge" class="bg-emerald-400 text-black text-xs px-3 py-1 rounded-2xl">0</span>
+                <span id="alarm-count-badge" class="bg-emerald-400 text-black px-4 py-1 text-xs rounded-3xl font-medium">0</span>
             </h2>
             <div id="alarms-list" class="space-y-4"></div>
         </div>
     </div>
 
-    <!-- Add / Edit Event Modal -->
-    <div id="event-modal" onclick="if(event.target.id==='event-modal')hideModal()" 
+    <!-- Event Modal -->
+    <div id="event-modal" onclick="if(event.target.id==='event-modal') hideModal()" 
          class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
         <div onclick="event.stopImmediatePropagation()" 
-             class="bg-[#161b22] w-full max-w-md mx-4 rounded-3xl overflow-hidden">
-            <div class="p-6 md:p-8">
-                <h3 id="modal-title" class="text-xl font-semibold mb-6">New Event</h3>
+             class="bg-[#161b22] w-full max-w-lg mx-4 rounded-3xl overflow-hidden">
+            <div class="p-8">
+                <h3 id="modal-title" class="text-2xl font-semibold mb-6">New Event</h3>
                 
-                <div class="space-y-5">
-                    <input id="event-title" type="text" placeholder="What are you planning?" 
-                           class="w-full bg-[#21262d] rounded-2xl px-5 py-4 text-base outline-none focus:border-[#58a6ff]">
-                    
-                    <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-6">
+                    <input id="event-title" type="text" placeholder="Event title" 
+                           class="w-full bg-[#21262d] rounded-2xl px-6 py-4 text-lg outline-none focus:border-[#58a6ff]">
+
+                    <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <label class="text-xs text-[#8b949e] block mb-1">Date</label>
-                            <input id="event-date" type="date" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none">
+                            <label class="block text-xs text-[#8b949e] mb-2">Date</label>
+                            <input id="event-date" type="date" class="w-full bg-[#21262d] rounded-2xl px-6 py-4 outline-none">
                         </div>
                         <div>
-                            <label class="text-xs text-[#8b949e] block mb-1">Alarm</label>
-                            <select id="event-alarm" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none">
+                            <label class="block text-xs text-[#8b949e] mb-2">Alarm</label>
+                            <select id="event-alarm" class="w-full bg-[#21262d] rounded-2xl px-6 py-4 outline-none">
                                 <option value="0">No alarm</option>
                                 <option value="5">5 min before</option>
                                 <option value="10" selected>10 min before</option>
@@ -183,32 +172,32 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <label class="text-xs text-[#8b949e] block mb-1">Start</label>
-                            <input id="event-start" type="time" value="09:00" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none">
+                            <label class="block text-xs text-[#8b949e] mb-2">Start Time</label>
+                            <input id="event-start" type="time" value="09:00" class="w-full bg-[#21262d] rounded-2xl px-6 py-4 outline-none">
                         </div>
                         <div>
-                            <label class="text-xs text-[#8b949e] block mb-1">End</label>
-                            <input id="event-end" type="time" value="10:00" class="w-full bg-[#21262d] rounded-2xl px-5 py-4 outline-none">
+                            <label class="block text-xs text-[#8b949e] mb-2">End Time</label>
+                            <input id="event-end" type="time" value="10:00" class="w-full bg-[#21262d] rounded-2xl px-6 py-4 outline-none">
                         </div>
                     </div>
 
-                    <textarea id="event-desc" placeholder="Notes (optional)" rows="3"
-                              class="w-full bg-[#21262d] rounded-3xl px-5 py-4 resize-none outline-none"></textarea>
+                    <textarea id="event-desc" rows="3" placeholder="Description / Notes (optional)"
+                              class="w-full bg-[#21262d] rounded-3xl px-6 py-4 outline-none resize-none"></textarea>
                 </div>
             </div>
             
-            <div class="p-6 border-t border-[#21262d] flex gap-3">
+            <div class="px-8 py-6 border-t border-[#21262d] flex gap-4">
                 <button onclick="hideModal()" class="flex-1 py-4 text-[#8b949e] font-medium">Cancel</button>
-                <button onclick="saveEvent()" class="flex-1 py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white font-medium rounded-2xl">Save Event</button>
+                <button onclick="saveEvent()" class="flex-1 py-4 bg-[#58a6ff] hover:bg-[#1f6feb] text-white rounded-2xl font-medium">Save Event</button>
             </div>
         </div>
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#21262d] border border-[#58a6ff] text-white px-6 py-3 rounded-3xl shadow-2xl z-[200]">
-        <span id="toast-text"></span>
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#21262d] border border-[#58a6ff] px-8 py-4 rounded-3xl shadow-2xl z-[200]">
+        <span id="toast-text" class="font-medium"></span>
     </div>
 
     <script>
@@ -218,7 +207,6 @@
         let currentDayPlanDate = new Date().toISOString().slice(0, 10)
         let editingEventId = null
 
-        // Load / Save
         function loadEvents() {
             const saved = localStorage.getItem('samayamEvents')
             events = saved ? JSON.parse(saved) : []
@@ -228,146 +216,158 @@
             localStorage.setItem('samayamEvents', JSON.stringify(events))
         }
 
-        function showToast(msg, duration = 2500) {
+        function showToast(msg, time = 2500) {
             const toast = document.getElementById('toast')
             document.getElementById('toast-text').innerHTML = msg
             toast.classList.remove('hidden')
-            setTimeout(() => toast.classList.add('hidden'), duration)
+            setTimeout(() => toast.classList.add('hidden'), time)
         }
 
-        // Calendar
+        // ==================== CALENDAR VIEW ====================
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid')
             grid.innerHTML = ''
-            
+
             const firstDay = new Date(currentYear, currentMonth, 1).getDay()
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
-            
+
             document.getElementById('month-title').textContent = 
                 new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })
 
             // Previous month filler
             for (let i = firstDay - 1; i >= 0; i--) {
                 const el = document.createElement('div')
-                el.className = 'calendar-day bg-[#161b22] p-3 opacity-40'
-                el.innerHTML = `<div class="text-right">${new Date(currentYear, currentMonth, 0).getDate() - i}</div>`
+                el.className = 'calendar-day bg-[#161b22] p-4 opacity-30'
+                el.innerHTML = `<div class="text-right text-sm">${new Date(currentYear, currentMonth, 0).getDate() - i}</div>`
                 grid.appendChild(el)
             }
 
-            // Current month
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
-                const isToday = dateStr === new Date().toISOString().slice(0,10)
-                
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const isToday = dateStr === new Date().toISOString().slice(0, 10)
+
                 const dayEl = document.createElement('div')
-                dayEl.className = `calendar-day bg-[#161b22] p-3 flex flex-col cursor-pointer hover:bg-[#1f2937] border-b border-r border-[#21262d] ${isToday ? 'ring-2 ring-offset-2 ring-offset-[#0d1117] ring-[#58a6ff]' : ''}`
-                
-                dayEl.innerHTML = `
-                    <div class="text-right font-medium ${isToday ? 'text-[#58a6ff]' : ''}">${d}</div>
-                `
-                
+                dayEl.className = `calendar-day bg-[#161b22] p-4 flex flex-col cursor-pointer border-b border-r border-[#21262d] ${isToday ? 'ring-2 ring-[#58a6ff]' : ''}`
+
+                dayEl.innerHTML = `<div class="text-right font-medium ${isToday ? 'text-[#58a6ff]' : ''}">${day}</div>`
+
                 const dayEvents = events.filter(e => e.date === dateStr)
-                if (dayEvents.length) {
+                if (dayEvents.length > 0) {
                     const preview = document.createElement('div')
                     preview.className = 'mt-auto flex flex-wrap gap-1'
-                    dayEvents.slice(0, 3).forEach(() => {
+                    dayEvents.slice(0, 4).forEach(() => {
                         const dot = document.createElement('div')
-                        dot.className = 'w-2 h-2 bg-[#58a6ff] rounded-full'
+                        dot.className = 'w-2.5 h-2.5 bg-[#58a6ff] rounded-full'
                         preview.appendChild(dot)
                     })
-                    if (dayEvents.length > 3) preview.innerHTML += `<span class="text-[10px] text-[#58a6ff]">+${dayEvents.length-3}</span>`
+                    if (dayEvents.length > 4) preview.innerHTML += `<span class="text-xs text-[#58a6ff] ml-1">+${dayEvents.length-4}</span>`
                     dayEl.appendChild(preview)
                 }
-                
-                dayEl.onclick = () => openDayPlan(dateStr)
+
+                dayEl.onclick = () => {
+                    currentDayPlanDate = dateStr
+                    switchTab(1)
+                    renderDayPlan()
+                }
                 grid.appendChild(dayEl)
             }
         }
 
-        // Day Plan (Timetune-style hourly schedule)
-        function renderDayPlan(dateStr = currentDayPlanDate) {
-            currentDayPlanDate = dateStr
-            const date = new Date(dateStr)
-            
+        function prevMonth() {
+            currentMonth--
+            if (currentMonth < 0) { currentMonth = 11; currentYear-- }
+            renderCalendar()
+        }
+
+        function nextMonth() {
+            currentMonth++
+            if (currentMonth > 11) { currentMonth = 0; currentYear++ }
+            renderCalendar()
+        }
+
+        function goToToday() {
+            const now = new Date()
+            currentMonth = now.getMonth()
+            currentYear = now.getFullYear()
+            renderCalendar()
+        }
+
+        // ==================== DAY PLAN VIEW ====================
+        function renderDayPlan() {
+            const date = new Date(currentDayPlanDate)
             document.getElementById('day-plan-date').textContent = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
             document.getElementById('day-plan-dayname').textContent = date.toLocaleDateString('en-IN', { weekday: 'long' })
 
             const container = document.getElementById('hourly-schedule')
             container.innerHTML = ''
 
-            const dayEvents = events.filter(e => e.date === dateStr)
+            const dayEvents = events.filter(e => e.date === currentDayPlanDate)
                 .sort((a, b) => a.startTime.localeCompare(b.startTime))
 
-            for (let hour = 0; hour < 24; hour++) {
-                const timeStr = `${hour.toString().padStart(2, '0')}:00`
-                
-                // Find events in this hour
-                const slotEvents = dayEvents.filter(e => {
-                    const startHour = parseInt(e.startTime.split(':')[0])
-                    return startHour === hour
-                })
+            for (let h = 0; h < 24; h++) {
+                const timeStr = `${h.toString().padStart(2, '0')}:00`
 
-                const slot = document.createElement('div')
-                slot.className = `hour-slot flex gap-4 border-b border-[#21262d] py-4 px-4 md:px-6 last:border-0 cursor-pointer`
-                
-                slot.innerHTML = `
-                    <div class="w-16 text-right font-mono text-sm text-[#8b949e] pt-1">${timeStr}</div>
-                    <div class="flex-1">
-                        ${slotEvents.length ? 
-                            slotEvents.map(ev => `
-                                <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" 
-                                     class="event-bar bg-[#21262d] hover:bg-[#30363d] rounded-2xl p-4 mb-3 cursor-pointer">
-                                    <div class="flex justify-between">
-                                        <div class="font-medium">${ev.title}</div>
-                                        <div class="text-xs text-emerald-400">${ev.startTime} - ${ev.endTime}</div>
-                                    </div>
-                                    ${ev.description ? `<div class="text-xs text-[#8b949e] mt-1">${ev.description}</div>` : ''}
-                                    ${ev.alarm ? `<div class="text-[10px] mt-2 inline-block bg-emerald-900 text-emerald-400 px-3 py-1 rounded-2xl">🛎️ ${ev.alarm} min</div>` : ''}
+                const slotEvents = dayEvents.filter(ev => parseInt(ev.startTime.split(':')[0]) === h)
+
+                const slotHTML = document.createElement('div')
+                slotHTML.className = `hour-slot flex gap-6 border-b border-[#21262d] py-5 px-6 last:border-none cursor-pointer`
+
+                slotHTML.innerHTML = `
+                    <div class="w-20 font-mono text-sm text-[#8b949e] pt-1">${timeStr}</div>
+                    <div class="flex-1 min-w-0">
+                        ${slotEvents.length ? slotEvents.map(ev => `
+                            <div onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" 
+                                 class="event-bar bg-[#21262d] hover:bg-[#30363d] rounded-2xl p-5 mb-4 cursor-pointer">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium text-lg">${ev.title}</div>
+                                    <div class="font-mono text-xs text-emerald-400">${ev.startTime}–${ev.endTime}</div>
                                 </div>
-                            `).join('') : 
-                            `<div onclick="quickAddEvent('${dateStr}', '${timeStr}')" 
-                                  class="text-[#8b949e] hover:text-white text-sm italic py-6 text-center border border-dashed border-[#30363d] rounded-2xl">
+                                ${ev.description ? `<div class="text-sm text-[#8b949e] mt-2">${ev.description}</div>` : ''}
+                                ${ev.alarm ? `<div class="mt-3 inline-flex items-center gap-1 text-xs bg-emerald-900/70 text-emerald-400 px-4 py-1 rounded-3xl">🛎️ ${ev.alarm} min before</div>` : ''}
+                            </div>
+                        `).join('') : `
+                            <div onclick="quickAddToDayPlan('${timeStr}')" 
+                                 class="border border-dashed border-[#30363d] hover:border-[#58a6ff] rounded-3xl py-10 text-center text-[#8b949e] hover:text-white">
                                 Click to add event at ${timeStr}
-                            </div>`
-                        }
+                            </div>
+                        `}
                     </div>
                 `
-                container.appendChild(slot)
+                container.appendChild(slotHTML)
             }
         }
 
-        function quickAddEvent(dateStr, startTime) {
+        function quickAddToDayPlan(startTime) {
             editingEventId = null
-            document.getElementById('event-date').value = dateStr
+            document.getElementById('event-date').value = currentDayPlanDate
             document.getElementById('event-start').value = startTime
-            document.getElementById('event-end').value = `${(parseInt(startTime.split(':')[0]) + 1).toString().padStart(2,'0')}:00`
-            document.getElementById('modal-title').textContent = 'Quick Add Event'
+            document.getElementById('event-end').value = `${(parseInt(startTime) + 1).toString().padStart(2,'0')}:00`
+            document.getElementById('modal-title').textContent = `Add Event at ${startTime}`
             document.getElementById('event-modal').classList.remove('hidden')
             document.getElementById('event-modal').classList.add('flex')
         }
 
-        function openDayPlan(dateStr) {
-            switchTab(2)
-            renderDayPlan(dateStr)
-        }
-
         function prevDayPlan() {
-            const d = new Date(currentDayPlanDate)
+            let d = new Date(currentDayPlanDate)
             d.setDate(d.getDate() - 1)
-            renderDayPlan(d.toISOString().slice(0,10))
+            currentDayPlanDate = d.toISOString().slice(0,10)
+            renderDayPlan()
         }
 
         function nextDayPlan() {
-            const d = new Date(currentDayPlanDate)
+            let d = new Date(currentDayPlanDate)
             d.setDate(d.getDate() + 1)
-            renderDayPlan(d.toISOString().slice(0,10))
+            currentDayPlanDate = d.toISOString().slice(0,10)
+            renderDayPlan()
         }
 
         function goToTodayInDayPlan() {
-            renderDayPlan(new Date().toISOString().slice(0,10))
+            currentDayPlanDate = new Date().toISOString().slice(0,10)
+            renderDayPlan()
         }
 
-        // Modal functions
+        // ==================== MODAL & CRUD ====================
         function showAddEventModal() {
             editingEventId = null
             document.getElementById('modal-title').textContent = 'New Event'
@@ -389,10 +389,7 @@
 
         function saveEvent() {
             const title = document.getElementById('event-title').value.trim()
-            if (!title) {
-                showToast('Event title is required')
-                return
-            }
+            if (!title) return showToast('Please enter an event title')
 
             const newEvent = {
                 id: editingEventId || Date.now(),
@@ -405,8 +402,8 @@
             }
 
             if (editingEventId) {
-                const index = events.findIndex(e => e.id === editingEventId)
-                if (index !== -1) events[index] = newEvent
+                const idx = events.findIndex(e => e.id === editingEventId)
+                if (idx > -1) events[idx] = newEvent
             } else {
                 events.push(newEvent)
             }
@@ -414,28 +411,26 @@
             saveEvents()
             hideModal()
             renderAllViews()
-            showToast('Event saved successfully ✓')
+            showToast('✅ Event saved')
         }
 
         function editEvent(id) {
-            const event = events.find(e => e.id === id)
-            if (!event) return
-
+            const ev = events.find(e => e.id === id)
+            if (!ev) return
             editingEventId = id
             document.getElementById('modal-title').textContent = 'Edit Event'
-            document.getElementById('event-title').value = event.title
-            document.getElementById('event-date').value = event.date
-            document.getElementById('event-start').value = event.startTime
-            document.getElementById('event-end').value = event.endTime
-            document.getElementById('event-desc').value = event.description || ''
-            document.getElementById('event-alarm').value = event.alarm || 0
-
+            document.getElementById('event-title').value = ev.title
+            document.getElementById('event-date').value = ev.date
+            document.getElementById('event-start').value = ev.startTime
+            document.getElementById('event-end').value = ev.endTime
+            document.getElementById('event-desc').value = ev.description || ''
+            document.getElementById('event-alarm').value = ev.alarm || 0
             document.getElementById('event-modal').classList.remove('hidden')
             document.getElementById('event-modal').classList.add('flex')
         }
 
         function deleteEvent(id) {
-            if (confirm('Delete this event?')) {
+            if (confirm('Delete this event permanently?')) {
                 events = events.filter(e => e.id !== id)
                 saveEvents()
                 renderAllViews()
@@ -443,35 +438,31 @@
             }
         }
 
-        // Other views (simplified)
+        // ==================== OTHER VIEWS ====================
         function renderWeekView() {
-            document.getElementById('week-title').innerHTML = `Week View <span class="text-sm font-normal text-[#8b949e]">(Coming soon)</span>`
-            document.getElementById('week-grid').innerHTML = `<div class="col-span-7 text-center py-20 text-[#8b949e]">Week overview will be added in next update</div>`
+            document.getElementById('week-title').innerHTML = `Week of ${new Date().toLocaleDateString('en-IN', {month:'long', day:'numeric'})} <span class="text-sm text-[#8b949e]">(Simple view)</span>`
+            document.getElementById('week-grid').innerHTML = `<div class="col-span-full text-center py-20 text-[#8b949e]">Week view coming in future update</div>`
         }
 
         function renderEventsTable(filter = '') {
             const tbody = document.getElementById('events-table')
             tbody.innerHTML = ''
+            let filtered = events
+            if (filter) filtered = events.filter(e => e.title.toLowerCase().includes(filter.toLowerCase()))
 
-            let filteredEvents = events
-            if (filter) {
-                const q = filter.toLowerCase()
-                filteredEvents = events.filter(e => e.title.toLowerCase().includes(q))
-            }
+            filtered.sort((a,b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
 
-            filteredEvents.sort((a,b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
-
-            filteredEvents.forEach(ev => {
+            filtered.forEach(ev => {
                 const row = document.createElement('tr')
                 row.className = 'hover:bg-[#161b22]'
                 row.innerHTML = `
-                    <td class="py-5 px-6 whitespace-nowrap">${new Date(ev.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</td>
-                    <td class="py-5 px-6 font-mono">${ev.startTime} – ${ev.endTime}</td>
+                    <td class="py-5 px-6">${new Date(ev.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</td>
+                    <td class="py-5 px-6 font-mono">${ev.startTime}–${ev.endTime}</td>
                     <td class="py-5 px-6 font-medium">${ev.title}</td>
                     <td class="py-5 px-6">${ev.alarm ? `🛎️ ${ev.alarm} min` : '—'}</td>
-                    <td class="py-5 px-6 text-right">
-                        <button onclick="editEvent(${ev.id}); event.stopImmediatePropagation()" class="text-[#58a6ff] mr-4">Edit</button>
-                        <button onclick="deleteEvent(${ev.id}); event.stopImmediatePropagation()" class="text-red-400">Delete</button>
+                    <td class="py-5 px-6 text-right space-x-4">
+                        <button onclick="editEvent(${ev.id});event.stopImmediatePropagation()" class="text-[#58a6ff]">Edit</button>
+                        <button onclick="deleteEvent(${ev.id});event.stopImmediatePropagation()" class="text-red-400">Delete</button>
                     </td>
                 `
                 tbody.appendChild(row)
@@ -481,30 +472,26 @@
         function renderAlarms() {
             const container = document.getElementById('alarms-list')
             container.innerHTML = ''
-            const activeAlarms = events.filter(e => e.alarm > 0)
-            document.getElementById('alarm-count-badge').textContent = activeAlarms.length
+            const active = events.filter(e => e.alarm > 0)
+            document.getElementById('alarm-count-badge').textContent = active.length
 
-            if (activeAlarms.length === 0) {
-                container.innerHTML = `<div class="bg-[#21262d] rounded-3xl p-12 text-center">No active alarms set yet</div>`
+            if (active.length === 0) {
+                container.innerHTML = `<div class="bg-[#21262d] rounded-3xl p-12 text-center text-[#8b949e]">No active alarms set</div>`
                 return
             }
 
-            activeAlarms.forEach(ev => {
+            active.forEach(ev => {
                 const card = document.createElement('div')
-                card.className = 'bg-[#21262d] rounded-3xl p-6 flex justify-between items-center'
+                card.className = 'bg-[#21262d] rounded-3xl p-6 flex justify-between'
                 card.innerHTML = `
                     <div>
-                        <div class="font-medium">${ev.title}</div>
-                        <div class="text-sm text-[#8b949e]">${new Date(ev.date).toLocaleDateString('en-IN')} at ${ev.startTime}</div>
+                        <div class="font-semibold">${ev.title}</div>
+                        <div class="text-sm text-[#8b949e]">${new Date(ev.date).toLocaleDateString('en-IN')} • ${ev.startTime}</div>
                     </div>
-                    <div class="text-emerald-400 text-sm">🛎️ ${ev.alarm} minutes before</div>
+                    <div class="text-emerald-400">🛎️ ${ev.alarm} min before</div>
                 `
                 container.appendChild(card)
             })
-        }
-
-        function updateStats() {
-            // Optional - can be expanded
         }
 
         function renderAllViews() {
@@ -514,79 +501,61 @@
             renderAlarms()
         }
 
-        // Tab switching
         function switchTab(tab) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'))
             document.getElementById(`view-${tab}`).classList.remove('hidden')
 
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'bg-[#21262d]'))
-            document.getElementById(`tab-${tab}`).classList.add('active', 'bg-[#21262d]')
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('bg-[#21262d]'))
+            document.getElementById(`tab-${tab}`).classList.add('bg-[#21262d]')
 
             if (tab === 0) renderCalendar()
-            if (tab === 1) renderWeekView()
-            if (tab === 2) renderDayPlan()
+            if (tab === 1) renderDayPlan()
+            if (tab === 2) renderWeekView()
             if (tab === 3) renderEventsTable()
             if (tab === 4) renderAlarms()
         }
 
-        // Navigation
-        function prevMonth() {
-            currentMonth--
-            if (currentMonth < 0) { currentMonth = 11; currentYear-- }
-            renderCalendar()
-        }
-
-        function nextMonth() {
-            currentMonth++
-            if (currentMonth > 11) { currentMonth = 0; currentYear++ }
-            renderCalendar()
-        }
-
-        function goToToday() {
-            const now = new Date()
-            currentMonth = now.getMonth()
-            currentYear = now.getFullYear()
-            renderCalendar()
-            switchTab(0)
+        function filterEvents() {
+            const term = document.getElementById('search-input').value
+            renderEventsTable(term)
         }
 
         // Export / Import
         function exportData() {
-            if (events.length === 0) return showToast('No events to export')
-            const dataStr = JSON.stringify(events, null, 2)
-            const blob = new Blob([dataStr], {type: 'application/json'})
+            if (!events.length) return showToast('No events to export')
+            const str = JSON.stringify(events, null, 2)
+            const blob = new Blob([str], {type: 'application/json'})
             const url = URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = url
-            link.download = `samayam-backup-${new Date().toISOString().slice(0,10)}.json`
-            link.click()
-            showToast('Backup downloaded')
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `samayam-${new Date().toISOString().slice(0,10)}.json`
+            a.click()
+            showToast('✅ Backup exported')
         }
 
         function importData(e) {
             const file = e.target.files[0]
             if (!file) return
             const reader = new FileReader()
-            reader.onload = function(ev) {
+            reader.onload = ev => {
                 try {
                     events = JSON.parse(ev.target.result)
                     saveEvents()
                     renderAllViews()
-                    showToast(`Imported ${events.length} events`)
-                } catch(err) {
-                    showToast('Invalid backup file')
+                    showToast(`✅ Imported ${events.length} events`)
+                } catch (err) {
+                    showToast('❌ Invalid file')
                 }
             }
             reader.readAsText(file)
         }
 
-        // Initialize App
-        window.onload = function() {
+        // Initialize
+        window.onload = () => {
             loadEvents()
             renderAllViews()
-            switchTab(2) // Start with Day Plan as default (most useful)
-            
-            showToast('Welcome to <strong>Samayam</strong> ⏱️', 1800)
+            switchTab(0)   // Start with Calendar tab
+            showToast('Welcome to <strong>Samayam</strong> ⏱️', 2000)
         }
     </script>
 </body>
